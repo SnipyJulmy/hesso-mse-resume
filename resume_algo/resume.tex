@@ -1,0 +1,153 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{fullpage}
+\usepackage{titlesec}
+\usepackage{minted}
+\usepackage[]{algorithm2e}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{10pt}
+\titleformat{\chapter}{}{\bf\LARGE\thechapter. \space}{0em}{\bf\LARGE}
+
+\SetKwRepeat{Do}{do}{while}
+
+\newminted{c}{frame=single, framesep=6pt, breaklines=true,fontsize=\scriptsize}
+
+\author{Sylvain Julmy}
+\title{Algorithmique : Résumé}
+\begin{document}
+\chapter{Exercices 1}
+\paragraph*{1.1} Il n'est pas possible de réaliser ce problème, si on compte le nombre d'intersection total pour chaque segment, on arrive à $5*3=15$, or, lors de chaque intersections, cela rajoute à chaque fois $2$ intersections, donc on arrive jamais à $15$ puisse que $15$ est impair.
+
+Avec $301$ segments qui doivent en couper exactement $201$ autres, cela nous donne $301*201=60501$, c'est impair dont impossible.
+
+Pour résoudre ce problème on peut modéliser sous la forme d'un graphe : $5$ sommets connectés à exactement $3$ autres sommets.
+
+\paragraph*{1.2} Ajouter des nœuds supplémentaires avec un arbre de Steiner, l'arbre de Steiner ce construit à partir du diagramme de Voronoï.
+
+\paragraph*{1.4} Un problème est donnée par une matrice de flot $F$ et une matrice de distance $D$. Si la matrice $D$ est plus grande que $F$ (si il y a plus de place que d'éléments à placer), alors on peut modifier la matrice $F$ avec des éléments quelconque dont le coût est l'élément neutre.
+
+\paragraph*{1.5} $x_i\ in \ \{0,1\}$ avec $\sum i \cdot x_i = 1170$ et $\prod i \cdot (1-x_i) = 36000$ et donc on peut définir la fonction d'utilité $min(|\sum i \cdot x_i - 1170| - |\prod i \cdot (1-x_i) - 36000|)$
+
+\paragraph*{1.6} On peut modéliser ce problème comme un problème de coloration de graphe.
+
+\paragraph*{1.9} 
+
+\chapter{Méthodes constructives}
+
+\section{Construction aléatoire}
+Tirer aléatoirement une solution dans l'espace des solutions admissibles. L'avantage est que la méthode est très facile à implémenter mais la qualité de la solution est déplorable et un tirage aléatoire uniforme n'est pas évident à réaliser.
+
+\begin{align*}
+& \sigma \text{ : permutation aléatoire } 1..n \\
+& \sigma_i \text{ : ième ville visité}\\
+& D = (d_{ij})\\
+& \text{minimiser } (\sum_{i=1}^{n-1} d_{\sigma_i \sigma_{i+1}}) + d_{\sigma_n \sigma_i}
+\end{align*}
+
+ou bien minimiser avec $s_i$ est la ville qui suit la ville $i$
+$$
+\sum_{i=1}^n d_{i s_i}
+$$
+
+\begin{algorithm}[H]
+\KwData{Tableau de $n$ element $L$}
+\KwResult{Une permutation aléatoire de $L$}
+Définir $l$ comme la longueur du tableau\;
+\For{i allant de 1 à n}{
+    Tirer aléatoirement $j \in [i;n]$\;
+    Permuter $L[j]$ avec $L[l]$\;
+    $l = l - 1$\; 
+}
+\end{algorithm}
+
+\section{Méthode gloutonne}
+
+L'idée est de construire une solution élément par élément en ajoutant, à chaque pas, un élément approprié. Cela est optimal pour certain problème.
+
+On part d'une solution $s$ vide ou trivial. On a une fonction de coût incrémental qui mesure empiriquement l'adéquation d'ajouter l'élément $e$ à $s$. Le fait d'ajouter un élément peut ajouter des contraintes sur les prochains éléments à ajouter.
+
+\begin{algorithm}[H]
+\tcc*[l]{Algorithme glouton en $O(n^2)$}
+\KwData{Une solution partielle minimal $s$ // en général $\emptyset$}
+\KwData{$R$ = $E$ // Ensemble des éléments pouvant être ajoutés à $s$}
+\KwResult{Une solution gloutonne}
+
+\While{$s$ n'est pas une solution complète}{
+    Calculer $c(e,s) \forall e \in R$\;
+    Choisir un $e'$ optimisant $c(e,s$)\;
+    $s = s \vee {e'}$\;
+    \tcp*[l]{propagation des contraintes}
+    Supprimer de $R$ tout les éléments qui ne peuvent être ajouter à $s$\;
+}
+\end{algorithm}
+
+Il existe d'autre algorithme :
+
+\subsection{Regret maximum}
+Lors de chaque étape, choisir la ville $e$ qui maximise la fonction
+$$
+c(s,e) = min_{j,k \in R}d_{je} + d_{ek} - min_{j \in R} d_{ie} + d_{ej}
+$$ 
+
+\subsection{Meilleur insertion}
+Choisir la ville $e$ qui minimise la fonction
+$$
+c(s,e) = \text{coût d'insertion minimalde la ville e avec la tournée partiel s}
+$$
+
+possible en maximisant : insertion de la ville la plus éloignée. Les deux méthodes sont en $O(n^2)$
+
+
+\chapter{Méthodes d'amélioration}
+
+Pseudo code d'une méthode d'amélioration locale :
+
+\begin{algorithm}[H]
+\tcc*[l]{Trame d'une méthode d'amélioration locale}
+\KwData{Une solution donnée (par exemple, à partir d'une construction gloutonne}
+\KwResult{Une solution équivalente ou meilleure}
+\Do{Une amélioration est effectué}{
+    Essayer de trouver une amélioration\;
+    Faire l'amélioration trouver\;
+}
+\end{algorithm}
+
+Exemple de modification :
+\begin{itemize}
+    \item Remplacer deux arêtes d'une tournée par deux autres
+    \item \textbf{2-Opt} : inverser le sens de parcours d'une sous-chaîne (remplacer deux arêtes par deux autres)
+    \item \textbf{3-Opt} : déplacer un chemin ailleurs dans la tournée (remplacer trois arcs par trois autres)
+    \item \textbf{Or-Opt} : Déplacer une sous-chaîne de $r$ sommet ailleurs dans la tournée avec $r = 3$ puis $2$ puis $1$ etc...
+\end{itemize}
+
+\paragraph*{3.1} On arrive deux fois à $-4$ pour le premier chemin améliorant.
+
+\chapter{Méthodes aléatoires}
+
+\section{Choix du prochain élément}
+
+Il existe plusieurs technique pour ce choix :
+\begin{itemize}
+    \item GRASP : on calcule $c_{min} et c_{max}$ (coût d'insertion) et on choisis l'élément parmis un sous-ensemble $R$ de $E$ où $E$ est l'ensemble des éléments disponibles et $R$ est $\{r \in E | c_{r} \in [c_{min};\alpha(c_{max}-c_{min})]\}$
+    \item colonie de fourmie : le choix est inversement proportionnel au coût et les coût sont modifiés en fonction des solutions construites précédemment
+    \item technique du bruitage : bruitage du coût en fonction d'une loi
+\end{itemize}
+
+\section{Recherches locales aléatoires}
+
+\section{Exercices}
+
+\paragraph*{4.1 : }
+
+
+
+
+\end{document}
