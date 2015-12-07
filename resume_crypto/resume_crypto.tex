@@ -546,6 +546,62 @@ On utilise une fonction de hachage cryptographiquement sûre $h:\{0,1\}^* \longr
 
 \paragraph*{Vérification : } $r\in{1,...,p-2}$ et $A^rr^s\equiv g^{h(m) \mod p}$
 
+\section{Exercices}
+
+\paragraph*{1.1 : } En admettant que quelqu'un est au milieu du canal, il reçoit $y_a$ et $y_b$ et connait $Z^*_p$ et $g$ générateur de $Z^*_p$. Il calcule $a' \in \{1,...,p-2\}$, $b' \in \{1,...,p-2\}$, $y_{a'} = g^{a'} \mod p$ et $y_{b'}=g^{b'} \mod p$ et renvoie $y_{b'}$ à Alice et $y_{a'}$ à Bob. Ainsi il connait $k_1$ et $k_2$ et peut donc transmettre les messages de bout en bout en les lisant et sans jamais être connus.
+
+\paragraph*{1.2 : } Car $p-1$ est l'ordre du générateur $g$ de $Z^*_p$ et donc $k$ vaudra $1$.
+
+\paragraph*{1.3 : } Les groupes ont la propriétés de l'associativité : $(g^a)^b = (g^b)^a$
+
+\paragraph*{1.4 : }
+\begin{align*}
+& p = 17 \ g=3 \ a=12 \ b=3 \\
+&y_a = 3^{12} \mod 17 = 4\\
+&y_b = 3^3 \mod 17 = 10\\
+&k = y_a^b = 4^3 \mod 17 = 13\\
+&k = y_b^a = 10^{12} \mod 17 = 13
+\end{align*}
+
+\paragraph*{1.5 : } Si on voit passer $4$ et $10$ en sachant $p$ et $g$, il faut calculer le logarithme discret de $4$ dans $p$ ($a=12$) et de $10$ dans $p$ ($b=3$). On peut donc connaitre $a$ et $b$. Donc si $p$ est grand, le calcul est lent.
+
+\begin{pythoncode}
+def measure_time(f, *args):
+    time1 = time.time()
+    f(*args)
+    time2 = time.time()
+    return time2 - time1
+    
+print "time of discreet logarithm of 4 in p=17 : " 
+      + str(measure_time(discreet_logarithm, 4, 17)) + str(" s")
+print "time of discreet logarithm of 10 in p=17 : " 
+      + str(measure_time(discreet_logarithm, 10, 17)) + str(" s")
+print "time of discreet logarithm of 10 in p=997 : " 
+      + str(measure_time(discreet_logarithm, 10, 997, )) + str(" s")
+\end{pythoncode}
+
+\begin{verbatim}
+time of discreet logarithm of 4 in p=17 : 3.50475311279e-05 s
+time of discreet logarithm of 10 in p=17 : 3.2901763916e-05 s
+time of discreet logarithm of 10 in p=997 : 3.27085113525 s
+\end{verbatim}
+
+\paragraph*{2.1 : } 
+
+\paragraph*{2.2 : } 
+
+\paragraph*{2.3 : } 
+
+\paragraph*{2.4 : } 
+
+\paragraph*{2.5 : } 
+
+\paragraph*{2.6 : } 
+
+\paragraph*{2.7 : } 
+
+\paragraph*{2.8 : } 
+
 \end{document}
 
 
