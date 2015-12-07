@@ -24,6 +24,8 @@
 
 \maketitle
 
+\chapter{TODO}
+
 \section*{Corps $\mathbb{F}_{2^\nu}$}
 
 $\nu = 4$,polynôme irréductible primitif
@@ -61,8 +63,6 @@ Il suffit de combiner les éléments primitifs : ${1,\alpha,\alpha^2,\alpha^3,\a
 \subsection*{(6)}
 
 \subsection*{(7)}
-
-\chapter{Historiques}
 
 \chapter{Chiffrement symétrique}
 
@@ -308,7 +308,11 @@ Seulement sûr pour des messages de taille fixe !
 
 \paragraph*{1.3 : } La clef publique ne doit pas être trivial. Par exemple, dans le cas de RSA, le clef publique est composé, en partie, d'un nombre $n$ qui est le produit de deux nombres premiers très grand $n = pq$. Si $n$ est petit, on est capable de trouver relativement rapidement sa décomposition en facteur premier et donc de déchiffrer le message.  Plus généralement, la clef publique contient l'information nécessaire à déchiffrer le message mais le temps nécessaire pour le faire est trop grand. Dans le cas de RSA, par ailleurs, ne pas choisir le carré d'un nombre premier.
 
+\textcolor{red}{Solution : la clef doit être authentique.}
+
 \paragraph*{1.4 : } Prenons par exemple la clef publique suivante : $(n=86701,e=919)$. On sait que un des nombres de la décomposition en facteur premier est inférieur à $\sqrt{n} = 294$. On doit donc juste tester si un nombre entre $2$ et $294$ divise $n$. Ce qui nous donne $293$ opérations modulo à faire jusqu'à trouver $n \equiv 0 \mod n$. On à donc la complexité de la décomposition en facteur premier : $O(\sqrt{n})$ pour $n$ facteur de deux nombres premiers. Si $n$ est assez grand, le nombre d'opération également.
+
+\textcolor{red}{Solution : si la clef n'est pas authentique, tout le monde peut créer sa propre clef et se faire passer pour Bob.}
 
 \paragraph*{1.5 : } Alice va utiliser la clef publique de Bob pour chiffrer le message et Bob va utiliser sa clef privé pour le déchiffrer.
 
@@ -331,7 +335,7 @@ Output :
 21^3 mod 17 = 5  22^3 mod 17 = 15 23^3 mod 17 = 11 24^3 mod 17 = 16
 \end{verbatim}
 
-On remarque que tous les nombres éléments de $\mathbb{Z}^*_{17}$ sont présent.
+On remarque que tous les nombres éléments de $\mathbb{Z}^*_{17}$ sont présent. \textcolor{red}{Et que la séquence à une période égale à $16$.}
 
 \paragraph*{2.3 : } L'ordre de $\mathbb{Z}^*_{17}$ pour $x=3$ est $16$ : $3^16 \equiv 1 \mod 17$. L'ordre de $\mathbb{Z}^*_{17}$ pour $x=2$ est $8$ : $2^8 \equiv 1 \mod 17$.
 
@@ -353,7 +357,7 @@ order for x = 13 : 4  order for x = 14 : 16 order for x = 15 : 8
 order for x = 16 : 2
 \end{verbatim}
 
-Les éléments dont l'ordre est maximal sont des générateurs car $\forall g_i \in \mathbb{Z}^*_m$, les éléments élevé à chaque puissance $g_i$ donne chaque élément de $\mathbb{Z}^*_m$.
+Les éléments dont l'ordre est maximal sont des générateurs car $\forall g_i \in \mathbb{Z}^*_m$, les éléments élevé à chaque puissance $g_i$ donne chaque élément de $\mathbb{Z}^*_m$. \textcolor{red}{L'ordre de tous les éléments divise l'ordre du groupe.}
 
 \paragraph*{2.4 : }
 \begin{pythoncode}
@@ -392,7 +396,7 @@ discret logarithm of 13 : (3, 4) discret logarithm of 14 : (3, 9)
 discret logarithm of 15 : (3, 6) discret logarithm of 16 : (3, 8)
 \end{verbatim}
 
-\paragraph*{3.1 : } Le groupe multiplicatif $\mathbb{Z}^*_{77}$ contient $76$ éléments : $\{1,2,...,76\}$. Le groupe multiplicatif $\mathbb{Z}^*_{pq}$ contient $pq-1$ éléments en général.
+\paragraph*{3.1 : } Le groupe multiplicatif $\mathbb{Z}^*_{77}$ contient $6\cdot10=60$ éléments : $\{1,2,...,76\}$ sauf mutlitple de $7$ et $11$. Le groupe multiplicatif $\mathbb{Z}^*_{pq}$ contient $(p-1)(q-1)$ éléments en général.
 
 \paragraph*{3.2 : }
 \begin{pythoncode}
@@ -401,7 +405,8 @@ for x in range(1,21):
     res.append(x**7 % 77)
 \end{pythoncode}
 \begin{verbatim}
-[1, 51, 31, 60, 47, 41, 28, 57, 37, 10, 11, 12, 62, 42, 71, 58, 52, 39, 68, 48]
+[1, 51, 31, 60, 47, 41, 28, 57, 37, 10,
+11, 12, 62, 42, 71, 58, 52, 39, 68, 48]
 \end{verbatim}
 
 \paragraph*{3.3 : }
@@ -415,9 +420,9 @@ for element in res:
 12L, 13L, 14L, 15L, 16L, 17L, 18L, 19L, 20L]
 \end{verbatim}
 
-Il s'agit des nombres de $1$ à $20$.
+Il s'agit des nombres de $1$ à $20$. \textcolor{red}{La fonction $x\mapsto x^43 \mod 77$ est l'inverse de la fonction $x\mapsto x^7 \mod 77$.}
 
-\paragraph*{3.4 : } L'ordre du groupe $\mathbb{Z}^*_{77}$ vaut $76 = 77 - 1$. L'inverse de $7$ $\mod 76$ vaut $11$.
+\paragraph*{3.4 : } L'ordre du groupe $\mathbb{Z}^*_{77}$ vaut $60 = (7-1)(11-1)$. L'inverse de $7$ $\mod 60$ vaut $43$.
 
 \begin{pythoncode}
 def egcd(a, b):
@@ -436,7 +441,110 @@ def mod_inv(a, m):
         return x % m
 \end{pythoncode}
 
+\chapter{Cryptographie Asymétrique}
 
+\paragraph*{Protocole d'identification : } un mot de passe et un username permet d'identifier un uti\-lisateur.
+
+\paragraph*{Protocole d'authentification : } e-banking, authentification via un certificat et le protocole TLS.
+
+Il existe trois type d'authentification:
+\begin{itemize}
+    \item authentification faible
+    \item authentification forte
+    \item authentification "zero knowledge"
+\end{itemize}
+
+Un mot de passe est une authentification faible (si mdp espionné -> "\textbf{replay attack}").
+
+Challenge-response est une authentification forte:
+\begin{enumerate}
+    \item Alice et Bob partage un secret symétrique commun
+    \item Alice s'annonce auprès du serveur
+    \item Bob génère un challenge $R$ (valeur aléatoire) à usage unique, stocke la pair $("Alice",R)$ et envoie $R$ à Alice.
+    \item Alice calcule $\tau = MAC_K("Alice"||R)$ et envoie la pair ("Alice",$\tau$) à Bob.
+    \item Bob reçoit la pair $(X,\tau')$, récupère le secret $K$ ainsi que la valeur $R$ correspondant à l'identité $X$, et calcule $\tau = MAC_K(X||R)$.
+    \item Si $\tau=\tau'$ alors Bob considère que Alice s'est authentifié avec succès.
+\end{enumerate}
+
+\section{Protocole de Diffie-Hellman}
+
+Le but de ce protocole est de \textbf{partagé un secret} entre deux entités au moyen d'un canal non-confidentiel. Par contre, le canal doit être authentique ("man in the middle attack"). L'idée principale consiste à utiliser une fonction à sens unique.
+
+\subsection{Logarithme discret}
+\begin{align*}
+& p = 2q + 1 \text{, $p$ est premier et $q$ en général est premier}\\
+& g \in G \rightarrow \mathbb{Z}^*_p \\
+& f : x \mapsto g^x \\
+& x \longrightarrow y = g^x \mod p
+\end{align*}
+
+Protocole de Diffie-Hellman :
+\begin{enumerate}
+    \item Choisir $\mathbb{Z}^*_p$ et $g$ générateur de $\mathbb{Z}^*_p$
+    \item Alice génère une valeur $a$ tel que $a\in\{1,2,...,p-2\}$, calcule $y_a=g^a\mod p$ et envoie $y_a$ à Bob
+    \item Bob génère une valeur $b$ tel que $b\in\{1,2,...,p-2\}$,  calcule $y_b=g^b\mod p$ et envoie $y_b$ à Alice
+    \item Alice calcule $k=y^a_b\mod p$ et Bob calcule $k=y^b_a \mod p$
+    \item La clef secrète partagée est $k$.
+\end{enumerate}
+
+\section{Chiffrement RSA}
+
+L'idée est d'utiliser une fonction à sens unique munie d'une trappe.
+
+\subsection{Génération de clef RSA}
+\begin{align*}
+& \text{On définis $P$ comme l'ensemble des nombres premiers} \\
+& p \in P \ q \in P \\
+& n = pq \\
+& \text{On définis l'opérateur $\oplus$ comme étant $e \oplus d$ : $e$ est premier avec $d$}\\
+& e \oplus \phi(n) \\
+& \phi(n) = (p-1)(q-1)\\
+& d = e^{-1} \mod \phi(n)\\
+& (n,e) \text{ : clef publique}\\
+& (n,d) \text{ : clef privée}
+\end{align*}
+
+\paragraph*{Utilisation : } on chiffre un message $m$ avec $c=m^e\mod n$, on déchiffre avec $m =c^d\mod n$
+
+\subsection{Signature RSA}
+
+Étant données la clef privée $(n,d)$ et un message $m$ à signer, on obtient la signature $s$ en calculant $s=m^d\mod n$. Étant donnés la clef publique $(n,e)$ et un message $m'$ muni d'une signature $s$, on vérifie la signature en calculant $m=s^e\mod n$ et on accepte la signature si et seulement si $m=m'$.
+
+En pratique, on ne signe pas un message mais une empreinte $h$ de ce message : $h=H(m)$ où $H(.)$ est une fonction de hachage cryptographiquement sûr. Étant donné deux signatures $s=m^d\mod n$ et $s=m'^d\mod n$ on peut créer une nouvelle signature :
+$$
+s \cdot s' \equiv m^d \cdot m'^d \equiv (m\cdot m')^d \mod n 
+$$
+
+\subsection{Signature RSA rapides}
+
+\begin{enumerate}
+    \item On calcule $d_p=d\mod (p-1)$, ainsi que $d_q=d\mod (q-1)$
+    \item On calcule $q^{-1}\mod p$ et $p^{-1}\mod q$ via Euclide étendu
+    \item Signature partielle :
+    \begin{itemize}
+        \item $s_p = m^{d_p} \mod p$
+        \item $s_q = m^{d_q} \mod q$
+    \end{itemize}
+    \item Signature finale : $s=(s_p(q^{-1} \mod p)q+s_q(p^{-1} \mod q)p) \mod n$
+    \end{enumerate}
+
+\section{Signature d'El-Gamal}
+
+Repose sur la difficulté de résoudre le problème du logarithme discret.
+
+\begin{itemize}
+    \item On génère un nombre premier $p=2q+1$ et un générateur $g\in \mathbb{Z}^*_p$
+    \item On génère $a \in \{1,...,p-2\}$
+    \item On calcule $A=g^a\mod p$
+    \item Clef publique : $(p,g,A)$
+    \item Clef privé : $(p,g,a)$
+\end{itemize}
+
+\subsection{Signature}
+
+On utilise une fonction de hachage cryptographiquement sûre $h:\{0,1\}^* \longrightarrow \{1,...,p-2\}$. On calcule un nombre $k\in\{1,...,p-2\}$ premier avec $p-1$. pour signer un message $m$, on calcule $r=g^k\mod p$ ainsi que $s=k^{-1}(h(m)-ar)\mod p-1$. La signature du message est $(r,s)$.
+
+\paragraph*{Vérification : } $r\in{1,...,p-2}$ et $A^rr^s\equiv g^{h(m) \mod p}$
 
 \end{document}
 
