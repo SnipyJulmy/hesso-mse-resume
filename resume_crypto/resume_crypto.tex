@@ -586,19 +586,63 @@ time of discreet logarithm of 10 in p=17 : 3.2901763916e-05 s
 time of discreet logarithm of 10 in p=997 : 3.27085113525 s
 \end{verbatim}
 
-\paragraph*{2.1 : } 
+\paragraph*{2.1 : } On sait que $\phi(n)$ est l'ordre du groupe des éléments $\mathbb{Z}/\mathbb{Z}_n$ et que $m$ est \textbf{sûrement} premier avec $n$. A partir du théorème d'Euler ($\alpha^{\phi(n)}\equiv 1(\mod n)$), on trouve que $ed \equiv 1 (\mod n)$ et que donc pour tout entier $\alpha$ : $ed = 1 + k\cdot \phi(n)$. Pour finir : $m^{ed} \equiv m^{1+k\phi(n)} \equiv m (\mod n)$.
 
-\paragraph*{2.2 : } 
+Si on sait que $m$ est un multiple de $p$ où de $q$, il suffit de trouver la décomposition en facteur premier de $m$ et de tester si $n$ est un multiple d'un de ces facteurs.
 
-\paragraph*{2.3 : } 
+\paragraph*{2.2 : } $2$ est toujours premier avec un nombre $n = p \cdot q$ si $p$ et $q$ sont premiers.
 
-\paragraph*{2.4 : } 
+\paragraph*{2.3 : } $659$
+\begin{pythoncode}
+def pgcd(a, b):
+    if a < b:
+        return pgcd(b, a)
+    if a % b == 0:
+        return b
+    return pgcd(b, a % b)
 
-\paragraph*{2.5 : } 
+p = 23
+q = 31
+n = p * q
+phi_n = (p - 1) * (q - 1)
+e = -1
+for i in range(2, phi_n):
+    if pgcd(phi_n, i) == 1:
+        e = i
 
-\paragraph*{2.6 : } 
+print e
+\end{pythoncode}
 
-\paragraph*{2.7 : } 
+\paragraph*{2.4 : } $66$
+\begin{pythoncode}
+p = 23
+q = 31
+n = p * q
+phi_n = (p - 1) * (q - 1)
+e = -1
+for i in range(2, phi_n):
+    if pgcd(phi_n, i) == 1:
+        e = i
+
+print e
+print mod_inv(e, n)
+\end{pythoncode}
+
+\paragraph*{2.5 : } $416$
+\begin{pythoncode}
+d = mod_inv(e, phi_n)
+m = 12
+m_c = m ** e % n
+m_d = m_c ** d % n
+
+print m_c
+\end{pythoncode}
+
+\paragraph*{2.6 : } On a $2^{1024} \approx 10^{308}$ et on sais que le nombre de nombre premier avant $n$ est d'environ $\frac{n}{\ln(n)}$. $ln(2^{1024}) \approx 710 = 7.1 \cdot 10^{2}$ On aura donc "seulement" $1.42 \cdot 10^{303}$ nombre à tester.
+
+En général, on doit tester $\sqrt{n}$ pour trouver une racine d'un facteur de deux nombre premier.
+
+\paragraph*{2.7 : } On sait que si $m=kp,\ k\in{\mathbb{N}}$, alors $c=k'p,\ k'\in\mathbb{N}$. On aura donc $pgcd(n,c) = p$.
 
 \paragraph*{2.8 : } 
 

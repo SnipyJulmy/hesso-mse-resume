@@ -10,7 +10,26 @@
 \usepackage{fullpage}
 \usepackage{titlesec}
 \usepackage{minted}
-\usepackage[]{algorithm2e}
+\usepackage[french,onelanguage,boxruled]{algorithm2e}
+
+\makeatletter
+\renewcommand{\@algocf@capt@plain}{above}% formerly {bottom}
+\makeatother
+
+\makeatletter
+\renewcommand{\algocf@caption@boxruled}{%
+  \hrule
+  \hbox to \hsize{%
+    \vrule\hskip-0.4pt
+    \vbox{   
+       \vskip\interspacetitleboxruled%
+       \unhbox\algocf@capbox\hfill
+       \vskip\interspacetitleboxruled
+       }%
+     \hskip-0.4pt\vrule%
+   }\nointerlineskip%
+}%
+\makeatother
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{10pt}
@@ -23,6 +42,137 @@
 \author{Sylvain Julmy}
 \title{Algorithmique : Résumé}
 \begin{document}
+
+\chapter{Pré-requis et introduction}
+
+\section{Arbre de recherche binaire}
+Caractéristiques :
+\begin{itemize}
+    \item Toutes les clés du sous-arbre gauche sont plus petites ou égales à la clé du parent
+    \item Toutes les clés du sous-arbre droit sont plus grandes que la clé du parent
+    \item Si les deux fils sont vides alors le nœud est appelé "feuille"
+\end{itemize}
+
+\begin{itemize}
+    \item Taille mémoire en $O(n)$
+    \item Profondeur en $O(\log(n))$
+    \item Insérer un élément en $O(\log(n))$
+    \item Recherche en $O(\log(n))$
+    \item Parcours en $O(n)$
+    \item Tri en $O(n\cdot\log(n))$
+\end{itemize}
+
+\begin{algorithm}[H]
+\caption{Rechercher un élément dans un arbre}
+\KwData{La racine $r$ de l'arbre}
+\KwResult{L'élément recherché}
+\While{L'élément courant n'est pas l'élément recherché}{
+    \eIf{La clef de l'élément est plus petite}{L'élément courant vaut l'élément de gauche}{L'élément courant vaut l'élément de droite}
+}
+Retourner l'élément trouvé \tcp*[r]{Vaut NULL si l'élément n'existe pas}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Insérer un élément dans un arbre}
+\KwData{La racine $r$ de l'arbre}
+\KwData{L'élément à insérer}
+\KwResult{L'arbre avec l'élément}
+Rechercher l'élément à insérer \tcp*[r]{Vaudra NULL}
+Remplacer le pointeur vide par l'élément à insérer\;
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Retirer un élément dans un arbre}
+\KwData{La racine $r$ de l'arbre}
+\KwData{L'élément à retirer}
+\KwResult{L'arbre sans l'élément}
+Rechercher l'élément à insérer\;
+\If{C'est une feuille}{Supprimer la feuille}
+\If{C'est un arbre avec un seule fils}{Remplacer l'élément par le fils}
+\If{C'est un arbre avec deux fils}{Remplacer l'élément par celui le plus à gauche dans le sous-arbre droit\;Si l'élément à un fils, le remplacer par le fils\tcp*[r]{N'a jamais deux fils}}
+\end{algorithm}
+
+Un arbre peut potentiellement se déséquilibrer et se transformer en liste chainée. Solutions :
+\begin{itemize}
+    \item Si on connait les éléments à l'avance, les insérer dans un ordre aléatoire (statistiquement c'est bon)
+    \item Imposer un différence maximum de hauteur entre tous les sous-arbres frères.
+\end{itemize}
+
+\section{Tas binaire}
+Un \textbf{tas max} est un arbre binaire équilibré, complet sur la gauche et où la clé n'est pas plus petite que la clé de ses fils. Le maximum des éléments se trouve donc à la racine.
+
+\begin{itemize}
+    \item Taille mémoire en $O(n)$
+    \item Insertion d'un élément en $O(\log(n))$
+    \item Recherche quelconque en $O(n)$
+    \item Recherche du max en $O(1)$
+    \item Parcours en $O(n)$
+\end{itemize}
+
+\begin{algorithm}[H]
+\caption{Insérer un élément dans un tas}
+\KwData{La racine $r$ du tas}
+\KwData{L'élément à insérer}
+\KwResult{Le tas avec l'élément}
+Rechercher l'élément à insérer\tcp*[r]{Dernier élément du parcours en largeur}
+Remplacer le pointeur vide par l'élément\;
+\While{Le parent est plus grand que l'élément}{
+Inverser le parent avec l'élément courant}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Retirer le max dans un tas}
+\KwData{La racine $r$ du tas}
+\KwResult{Le tas sans l'élément}
+Rechercher le dernier éléments du tas par un parcours en largeur\;
+Supprimer le max\;
+\While{L'élément est plus grand qu'un des fils}{
+L'inverser avec le fils le plus grand}
+\end{algorithm}
+
+\section{Complexité algorithmique}
+
+Soient $f(x)$ et $g(x)$, on dit que $f$ est d'ordre inférieur ou égale à $g$ si: $f(x) \leq c\cdot g(x) \forall x \geq x_0,\ x_0>0,\ c > 0$. On écris alors $f\in O(g)$.
+\begin{itemize}
+    \item \textbf{$f$ est dominé par $g$} ($f\in O(g)$) si il existe une constante $c$ tel que pour tout $n\geq n_0$ on a $c\cdot g(n) \geq f(n)$
+    \item L'inverse se dit \textbf{$f$ domine $g$} (dans le cas ci-dessus c'est $g$ qui domine $f$)
+    \item Si \textbf{$f$ est borné dessus \textbf{et} dessous} par $g$ : $c_1,c_2$ où $\forall n \geq n_0$ on a $c_1\cdot g(n) \leq f(n) \leq c_2 \cdot g(n)$
+\end{itemize}
+
+\section{Théorème général de récurrence}
+Temps pour résoudre un problème de taille $n$ récursivement : $T(n) = aT(n/b) + f(n)$ avec $a\geq 1$ et $b > 1$. On doit résoudre $a$ sous-problème de même type que le problème initial qui est découpé en $b$ parties. Il faut $f(n)$ pour rassembler $b$.
+
+\section{Graphe}
+
+\begin{itemize}
+    \item Une boucle est une arête $e=(v_0,v_0)$ incidente au même sommet
+    \item Un sommet isolé est de degré $0$
+    \item Un sommet de degré $1$ est dit "pendant"
+\end{itemize}
+
+\subsection{Non-orienté}
+On note un graphe non-orienté $G=(V,E)$ avec un ensemble $V$ de sommet ($|V|=n$) et un ensemble $E$ d'arête ($|E|=m$). A chaque arête est associé une paire de sommet appelée les extrémités. Deux sommets sont adjacent si il existe une arête entre eux. Une arête qui relie les sommets $u$ et $v$ est dit incidente à $u$ et $v$.
+
+\begin{itemize}
+    \item Le degré d'un somme $v$ noté $deg(v)$ est le nombre de d'arête incidents à $v$
+    \item Une chaîne est une suite alternée de sommet et d'arête, commençant et finissant par un sommet. Une chaîne est dit simple si chaque \textbf{arête} y apparait une fois au plus. Une chaîne est dit élémentaire si chaque \textbf{sommet} y apparait une fois au plus. La longueur d'une chaîne est égal au nombre d'arête qu'elle contient. Un cycle est une chaîne dont les deux extrémités sont confondus et qui contient au moins une arête.
+\end{itemize}
+
+Le théorème d'Euler nous dit que $\sum_{v\in V} deg(v) = 2\cdot |E|$ et qu'il y a un nombre pair de sommets de degré pair.
+
+\subsection{Orienté}
+On note un graphe orienté $G=(V,E)$ avec un ensemble $V$ de sommet ($|V|=n$) et un ensemble $E$ d'arête ($|E|=m$). A chaque arête est associé une paire de sommet appelée les extrémités. Deux sommets $u$ et $v$ sont adjacent si il existe une arête $(u,v)$ entre eux. $u$ est l'extrémité initiale et $b$ terminale.
+
+\begin{itemize}
+    \item Le degré extérieur $deg^+(v)$ est la somme des arêtes dont l'extrémité initiale est $v$
+    \item Le degré intérieur $deg^-(v)$ est la somme des arêtes dont l'extrémité terminale est $v$
+    \item Le degré $deg$ vaut $deg(v)=deg^+(v)+deg^-(v)$
+    \item Un chemin est une chaîne mais dont les orientations concordent
+    \item Un circuit est un cycle avec la même contrainte que ci-dessus
+\end{itemize}
+
+Le théorème d'Euler nous dit que $\sum_{v\in V} deg^+(v) = \sum_{v\in V} deg^-(v) = |E|$
+
 \chapter{Exercices 1}
 \paragraph*{1.1} Il n'est pas possible de réaliser ce problème, si on compte le nombre d'intersection total pour chaque segment, on arrive à $5*3=15$, or, lors de chaque intersections, cela rajoute à chaque fois $2$ intersections, donc on arrive jamais à $15$ puisse que $15$ est impair.
 
@@ -147,7 +297,99 @@ Il existe plusieurs technique pour ce choix :
 
 \paragraph*{4.1 : }
 
+\chapter{Méthodes de décomposition}
 
+En général, utiliser pour résoudre des problèmes de très grandes tailles (entre $10^3$ et $10^7$ d'ordre de grandeur).
+\begin{itemize}
+    \item Jouet : énumération complète
+    \item Petit : Méthodes exactes
+    \item Moyen : Méta-heuristique (limite de la mémoire en $O(n^2)$)
+    \item Grand : Méthode de décomposition
+    \item Très grand : Bases de données distribuées
+\end{itemize}
+
+\section{Recherche dans de grand voisinage}
+
+Cette technique est applicable typiquement dans un problème de programmation par contrainte avec plusieurs millier de variable. L'idée est de fixée les valeurs de toutes les variables sauf un certain sous-ensemble. On optimise le sous-ensemble et on peut recommencer avec un autre sous-ensemble une fois cela fait.
+
+\section{Popmusic : méthode de décomposition générique}
+
+Idée générale de Popmusic :
+
+\begin{algorithm}[H]
+\tcc*[l]{Algorithme Popmusic}
+\KwData{Une solution donnée (par exemple, à partir d'une construction gloutonne}
+\KwResult{Une solution équivalente ou meilleure}
+\For{Chaque sous-ensemble de la solution}{
+    Optimiser le sous-ensemble\;
+}
+\end{algorithm}
+
+La difficulté est que les sous-ensemble ne sont peut-être pas indépendant les uns des autres.
+
+\begin{algorithm}[H]
+\tcc*[l]{Algorithme plus précis pour Popmusic}
+\KwData{Une solution $S = s_1 \vee s_2 \vee ... \vee s_p$}
+\KwData{$O = \emptyset$}
+\KwResult{Une solution équivalente ou meilleure}
+\While{$S \neq O$}{
+    Choisir un élément $S_i \notin O$\;
+    Créer un sous-problème $R$ composée de $r_i \in S$ les plus proches de $s_i$\;
+    Optimiser $R$\;
+    \eIf{$R$ est amélioré}
+        {$O \leftarrow O \setminus R$}
+        {$O \leftarrow O \vee s_i$}
+}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\tcc*[l]{Grand voisinage pour le VRP}
+\KwData{Une solution $S$ initial}
+\KwResult{Une solution équivalente ou meilleure}
+Â partir de $S$, supprimer $n$ point de la solution\;
+Réinsérer les clients au mieux\; 
+\end{algorithm}
+
+\subsection{Popmusic pour la classification non-supervisée}
+
+Les parties sont les éléments d'une même classe, on calcule la dissimilarité moyenne entre les éléments de classes différentes et la distance entre les centroïdes, puis on optimise la solution en déplacement progressivement des centres et on recalcule le tout avec l'algorithme K-means.
+
+\subsection{Compression d'image par quantification de vecteur}
+
+On cherche à décomposer une image en blocs de $b$ pixels (par exemple $b=5 \times 3$). On cherche à trouver la meilleur palette de $2^k$ couleurs, vues comme des vecteurs de $3 \times b$ octets. Il s'agit d'un problème de classification composer de millions d'éléments en des milliers de groupes. On code chaque bloc par $k$ bits.
+
+\section{Exercices}
+
+\paragraph*{5.1 : } 
+
+\paragraph*{5.2 : } 
+
+\chapter{Fourmis artificielles et constructions aléatoires}
+
+\begin{algorithm}[H]
+\tcc*[l]{Système de fourmis pour le TSP}
+\KwData{Une matrice de distance entre les villes $D=(d_{ij} = \frac{1}{\eta_{ij}})$}
+\KwData{Une matrice de trace $T=(\tau_{ij})$}
+\KwData{Les paramètres $\alpha$, $\beta$, $\rho$, $\tau_0$, $Q$ et $max\_iter$}
+\KwResult{Une solution}
+Initialisation : Poser $\tau_{ij} = \tau_0$\;
+\For{$max\_iter$ itérations}{
+    $R = (r_{ij}) = 0$\tcc*[r]{Renforcement des arêtes}
+    \For{$k = \{1,...,m\}$}{
+        $L = 0$\;
+        Choisir une ville $i$ au hasard\;
+        \While{Toutes les villes ne sont pas visité}{
+            Choisir une ville $j$ non-visitée avec $P$ proportionnelle à $\tau_{ij}^\alpha \cdot \eta_{ij}^\beta$\;
+            $L = L + d_{ij}$\;
+            $i=j$\;
+        }
+        \For{tout les trajets $(i,j)$ de la tournée}{
+            $r_{ij} = r_{ij} + Q / L$
+        }
+    }
+    $T = (1-\rho)T + R$\tcc*[r]{Mise à jour des traces de phéromones}
+}
+\end{algorithm}
 
 
 \end{document}

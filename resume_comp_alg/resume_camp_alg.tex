@@ -787,6 +787,47 @@ $$
 
 Dans les deux cas, on ne construit pas $Q$. On applique l'algorithme de calcule de $HA$ pour une matrice $A$.
 
+\section{Itération de Jacobi}
+On veut résoudre $Ax=b$ par itération :
+$$
+x_i^{k+1} = \frac{1}{a_{ii}} \Big( b_i - \sum_{j=1,j\neq i}^n a_{ij}x_j^{(k)} \Big) \ ; 1\leq i \leq n
+$$
+
+Sous forme matricielle :
+$$
+A = \begin{pmatrix}
+a_{11} & a_{12} & a_{13} \\
+a_{21} & a_{22} & a_{23} \\
+a_{31} & a_{32} & a_{33}
+\end{pmatrix}
+D = \begin{pmatrix}
+a_{11} & 0 & 0 \\
+0 & a_{22} & 0 \\
+0 & 0 & a_{33}
+\end{pmatrix}
+$$
+$$
+L = -\begin{pmatrix}
+0&0&0 \\
+a_{21} & 0&0 \\
+a_{31} & a_{32} &0
+\end{pmatrix}
+U = -\begin{pmatrix}
+0 & a_{12} & a_{13} \\
+0 & 0 & a_{23} \\
+0&0&0
+\end{pmatrix}
+$$
+
+et
+$$
+A = D - L - U
+$$
+
+$$
+x^{k+1} = D^{-1}b+D^{-1}(L+U)x^k
+$$
+
 \section{Exercices}
 
 \paragraph*{(1) : } $x=(4,4,2)^T$
@@ -864,6 +905,18 @@ $$
 \begin{align*}
 & \tau_2 = \frac{1}{54} (9,1,1,5) \cdot \matdddd{3}{1}{-5}{-1} = \frac{27+1-5-5}{54} = \frac{18}{54} = \frac{1}{3} \\
 & \tau_3 = \frac{1}{54} (9,1,1,5) \cdot \matdddd{-2}{1}{1}{2} = \frac{-18+1+1+10}{54} = \frac{-6}{54} = -\frac{1}{9} \\
+\end{align*}
+
+\paragraph*{(7,a) : }
+$x_{1a} = 1$, $x_{2a} = 1$, $x_{1b} = 1$, $x_{2b} = 1$
+
+\paragraph*{(7,b) : }
+\begin{align*}
+& x^{(0)} = (0,0)^T \\
+& x^{(1)} = (\frac{1}{10} \codt \Big( 11 -  \Big),)^T \\
+& x^{(2)} =  \\
+& x^{(3)} =  \\
+& x^{(4)} =  \\
 \end{align*}
 
 \chapter{Code source}
