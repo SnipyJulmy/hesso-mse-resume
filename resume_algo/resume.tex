@@ -42,7 +42,7 @@
 \author{Sylvain Julmy}
 \title{Algorithmique : Résumé}
 \begin{document}
-
+\maketitle
 \chapter{Pré-requis et introduction}
 
 \section{Arbre de recherche binaire}
@@ -71,6 +71,8 @@ Caractéristiques :
 }
 Retourner l'élément trouvé \tcp*[r]{Vaut NULL si l'élément n'existe pas}
 \end{algorithm}
+
+
 
 \begin{algorithm}[H]
 \caption{Insérer un élément dans un arbre}
@@ -367,14 +369,14 @@ On cherche à décomposer une image en blocs de $b$ pixels (par exemple $b=5 \ti
 \chapter{Fourmis artificielles et constructions aléatoires}
 
 \begin{algorithm}[H]
-\tcc*[l]{Système de fourmis pour le TSP}
+\caption{Système de fourmis pour le TSP}
 \KwData{Une matrice de distance entre les villes $D=(d_{ij} = \frac{1}{\eta_{ij}})$}
 \KwData{Une matrice de trace $T=(\tau_{ij})$}
 \KwData{Les paramètres $\alpha$, $\beta$, $\rho$, $\tau_0$, $Q$ et $max\_iter$}
 \KwResult{Une solution}
 Initialisation : Poser $\tau_{ij} = \tau_0$\;
 \For{$max\_iter$ itérations}{
-    $R = (r_{ij}) = 0$\tcc*[r]{Renforcement des arêtes}
+    $R = (r_{ij}) = 0$\tcp*[r]{Renforcement des arêtes}
     \For{$k = \{1,...,m\}$}{
         $L = 0$\;
         Choisir une ville $i$ au hasard\;
@@ -387,9 +389,77 @@ Initialisation : Poser $\tau_{ij} = \tau_0$\;
             $r_{ij} = r_{ij} + Q / L$
         }
     }
-    $T = (1-\rho)T + R$\tcc*[r]{Mise à jour des traces de phéromones}
+    $T = (1-\rho)T + R$\tcp*[r]{Mise à jour des traces de phéromones}
 }
 \end{algorithm}
 
+\chapter{Recherche avec tabous}
 
+Il s'agit d'une recherche locale avec la politique du meilleur mouvement sauf qu'elle possède certain ajout :
+\begin{itemize}
+    \item Interdire de revenir à une solution déjà visité
+    \item Interdire d'effectuer l'inverse d'un mouvement
+    \item Pénaliser les mouvements fréquemment utilisés
+    \item Forcer l'utilisation de mouvement jamais utilisés
+    \item Lever une interdiction après un certain nombre d'itérations
+\end{itemize}
+
+Besoins :
+\begin{itemize}
+    \item Une fonction d'aspiration : un mouvement interdits, qui améliore $s^*$, est accepté
+    \item Intensification de la recherche : diminuer le nombre de mouvement interdits et repartir depuis la meilleure solution trouvée
+    \item Diversification de la recherche : Fréquence des mouvements utilisés, mémoire des bonnes solutions (Chemin de liaison, construction de vocabulaire)
+\end{itemize}
+
+\begin{algorithm}[H]
+\caption{Recherche avec tabous de base}
+\KwData{Solution initiale $s$}
+\KwData{Fonction utilité $f$ à minimiser}
+\KwData{Ensemble $M$ des mouvements applicables à toute solution}
+\KwData{Paramètres $t$(durée des interdictions), $max\_iter$}
+\KwResult{Une solution équivalente ou meilleure}
+Initialisation : $T = \emptyset$, $s^* = s$\;
+\For{$max\_iter$}{
+    meilleur\_voisin = $\infty$\;
+    \For{$m\in M$, $m \notin T$}{
+        \If{meilleur\_voisin $> f(s \oplus m)$}{
+            meilleur\_voisin $= f(s \oplus m)$\;
+            meilleur\_mouvement $= m$\;
+        }
+        $s = s \oplus $ meilleur\_mouvement\;
+        Remplacer dans $T$ le plus ancien mouvement par $meilleur\_mouvement^{-1}$\;
+        \If{meilleur\_voisin $< f(s^*)$}{
+            $s^* = s$\;
+        }
+    }
+}    
+Retourner $s^*$\;
+\end{algorithm}
+
+\section{Recherche avec tabous pour le QAP}
+Une solution est une permutation $p$ de $n$ éléments. Mouvement applicable à n'importe quelle : Transposer les objets $i$ et $j$ $(m=(i,j),1\leq i < j\leq n)$. C'est à dire : l'objet $i$ actuellement en position $p_i$ est déplacé en position $p_j$ et l'objet $j$ est déplacé en $p_i$.
+
+Inverse d'un mouvement : replacer simultanément l'objet $i$ en $p_i$ et l'objet $j$ en $p_j$.
+
+Mémoire : 
+\begin{itemize}
+    \item Matrice $T=t_{ir}$ de taille $n\times n$
+    \item $t_{ir}$ numéro d'itération où l'on peut à nouveau placer l'objet $i$ en position $r$
+    \item Le mouvement $(i,j)$ est interdit à la solution $p$ à l'itération $k \Longleftrightarrow (t_{ip_j} > k) \wedge (t_{jp_i} > k)$
+    \item Le statut d'un mouvement $(i,j)$ peut être tester en temps constant
+\end{itemize}
+
+\section{Durée des interdictions}
+La durée des interdictions influence énormément l'évolution de l'algorithme, si la durée est trop faible, on risque de revenir sur ses pas, faire des cycles ou encore d'être piéger dans un optimum local. Au contraire, si elle est trop grande, il y aura un nombre limité de mouvement réalisable et on risque fortement de ne pas voir "les bon chemins" car tout le temps une partie est interdite.
+
+Solutions :
+\begin{itemize}
+    \item Apprendre dynamiquement la durée des inter\-dictions (augmenter la durée des inter\-dictions si on visite 2 fois la même solution, diminuer la durée si on ne visite pas la même solution pendant un plusieurs itérations)
+    \item Tirer aléatoirement la durée des interdictions : des mouvements sont interdits pendant longtemps mais la plupart sont juste inaccessible pendant un court instant
+\end{itemize}
+
+\section{Mémoire à long terme}
+\paragraph*{Pénalité sur les fréquences : }Le but est d'éviter les mouvements de faibles coût en mémo\-risant la fréquence d'utilisation de chaque mouvement et en pénalisant de $F\cdot freq(m)$ le mouvement $m$.
+\paragraph*{Recherche locale guidée : } Lorsqu'un optimum local est atteint, l'élément le plus couteux de la solution est pénalisé pour défavoriser sont utilisation future.
+\paragraph*{Forcer des mouvements : } Casser la structure d'une solution en identifiant les mouvements jamais choisis durant les $K$ dernières itérations. Pour QAP, on lit cela directement dans la matrice $T$.
 \end{document}
