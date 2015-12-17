@@ -38,6 +38,11 @@
 \newcommand{\normdeux}[1]{||#1||_2}
 \newcommand{\norminf}[1]{||#1||_{\infty}}
 
+\newcommand{\dydt}{\frac{dy}{dt}}
+\newcommand{\dxdt}{\frac{dx}{dt}}
+\newcommand{\dxdy}{\frac{dx}{dy}}
+\newcommand{\dydx}{\frac{dy}{dx}}
+
 \makeatletter
 \renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
   \hskip -\arraycolsep
@@ -913,11 +918,258 @@ $x_{1a} = 1$, $x_{2a} = 1$, $x_{1b} = 1$, $x_{2b} = 1$
 \paragraph*{(7,b) : }
 \begin{align*}
 & x^{(0)} = (0,0)^T \\
-& x^{(1)} = (\frac{1}{10} \codt \Big( 11 -  \Big),)^T \\
-& x^{(2)} =  \\
-& x^{(3)} =  \\
-& x^{(4)} =  \\
+& x^{(1)} = (\frac{1}{10} \cdot \Big( 11 -  \Big),)^T \\
+& x^{(2)} =  1\\
+& x^{(3)} =  2\\
+& x^{(4)} =  3\\
 \end{align*}
+
+\chapter{Résolution numérique d'EDO}
+
+On veut résoudre $\dydt=f(t,y)$ sur l'intervalle $[t_0,t_f]$ avec $y(t_0)=y_0$. On recherche dont l'inconnue $y(t)=...$.
+
+Si $f(t,y)$ obéit à une condition de Lipschitz $|f(t,y_1)-f(t,y_2)| \leq |y_1-y_2|$, $t_0 < t \leq t_f$. Pour tout $y_1$ et $y_2$, alors $\dydt=f(t,y)$ admet une solution unique sur $[t_0,t_f]$.
+
+\section{Solution numérique}
+
+On va créer une suite de valeur pour $t$ et $y$ : $t=\{t_0,t_1,...,t_n\}$ et $y=\{y_1,y_2,...,y_n\}$ et on souhaiterais $\forall y_i \in y$ : $y_i \approx y(t_i)$ et donc $y_n \approx y(t_n) = y(t_f)$.
+
+\section{Méthode d'Euler}
+
+On utilise la pente en $(t_n,y_n)$ pour calculer $y_{n+1}$ (Runge-Kutta à 1 étage) :
+$$
+\left\{
+\begin{array}{@{}l@{}}
+    s_1 = f(t_n,y_n) \\
+    y_{n+1} = y_n + hs_1, \ \ \ n = 0,1,2,... \\
+    t_{n+1} = t_n + h
+\end{array}\right.
+$$ 
+
+\paragraph*{Exemple : } On veut résoudre $\dydt=t+y$, $y(0)=2$, $0\leq t \leq 1$ :
+
+\begin{minipage}{0.45\textwidth}
+\begin{flushleft}
+\begin{matlabcode}
+%% Euler example h=0.5
+h = 0.5;
+t = 0:h:1;
+f_ty = @(f,t) f + t;
+y = 2;
+
+for tn = t
+    s = f_ty(tn,y);
+    fprintf('t=%4.2f , y=%4.2f\n',tn,y);
+    y = y + h * s;
+end
+\end{matlabcode}
+\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.2\textwidth}
+\phantom{asd}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\begin{flushright}
+\begin{verbatim}
+t=0.00 , y=2.00
+t=0.50 , y=3.00
+t=1.00 , y=4.75
+\end{verbatim}
+\end{flushright}
+\end{minipage}
+
+\vspace{5pt}
+
+\begin{minipage}{0.45\textwidth}
+\begin{flushleft}
+\begin{matlabcode}
+%% Euler example h=0.2
+h = 0.2;
+t = 0:h:1;
+f_ty = @(f,t) f + t;
+y = 2;
+
+for tn = t
+    s = f_ty(tn,y);
+    fprintf('t=%4.2f , y=%4.2f\n',tn,y);
+    y = y + h * s;
+end
+\end{matlabcode}
+\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.2\textwidth}
+\phantom{asd}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\begin{flushright}
+\begin{verbatim}
+t=0.00 , y=2.00
+t=0.20 , y=2.40
+t=0.40 , y=2.92
+t=0.60 , y=3.58
+t=0.80 , y=4.42
+t=1.00 , y=5.46
+\end{verbatim}
+\end{flushright}
+\end{minipage}
+
+\section{Méthode du point du millieu}
+
+Il s'agit ici d'une méthode de Runge-Kutta à 2 étages :
+$$
+\left\{
+\begin{array}{@{}l@{}}
+    s_1 = f(t_n,y_n) \\
+    s_2 = f(t_n+\frac{1}{2}h,y_n+\frac{1}{2}hs_1) \\
+    y_{n+1} = y_n + hs_2 \\
+    t_{n+1} = t_n + h
+\end{array}\right.
+$$ 
+
+\paragraph*{Exemple : } On veut résoudre $\dydt=t+y$, $y(0)=2$, $0\leq t \leq 1$ :
+
+\begin{minipage}{0.45\textwidth}
+\begin{flushleft}
+\begin{matlabcode}
+%% Midlle point example
+h = 0.2;
+t = 0:h:1;
+f_ty = @(f,t) f + t;
+y = 2;
+
+for tn = t
+    s1 = f_ty(tn,y);
+    s2 = f_ty(tn+0.5*h,y+0.5*h*s1);
+    fprintf('t=%4.2f , y=%4.2f\n',tn,y);
+    y = y + h * s2;
+end
+\end{matlabcode}
+\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.2\textwidth}
+\phantom{asd}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\begin{flushright}
+\begin{verbatim}
+t=0.00 , y=2.00
+t=0.20 , y=2.46
+t=0.40 , y=3.07
+t=0.60 , y=3.85
+t=0.80 , y=4.85
+t=1.00 , y=6.11
+\end{verbatim}
+\end{flushright}
+\end{minipage}
+
+\section{Méthode du trapèze}
+
+Il s'agit aussi d'une méthode de Runge-Kutta à 2 étages :
+$$
+\left\{
+\begin{array}{@{}l@{}}
+    s_1 = f(t_n,y_n) \\
+    s_2 = f(t_n+h,y_n+hs_1) \\
+    y_{n+1} = y_n + h \cdot (\frac{1}{2}s_1 + \frac{1}{2}s_2) \\
+    t_{n+1} = t_n + h
+\end{array}\right.
+$$ 
+\paragraph*{Exemple : } On veut résoudre $\dydt=t+y$, $y(0)=2$, $0\leq t \leq 1$ :
+
+\begin{minipage}{0.45\textwidth}
+\begin{flushleft}
+\begin{matlabcode}
+%% Trapeze method
+h = 0.2;
+t = 0:h:1;
+f_ty = @(f,t) f + t;
+y = 2;
+
+for tn = t
+    s1 = f_ty(tn,y);
+    s2 = f_ty(tn+h,y+h*s1);
+    fprintf('t=%4.2f , y=%4.2f\n',tn,y);
+    y = y + h * (0.5*s1 + 0.5*s2);
+end
+\end{matlabcode}
+\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.2\textwidth}
+\phantom{asd}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\begin{flushright}
+\begin{verbatim}
+t=0.00 , y=2.00
+t=0.20 , y=2.46
+t=0.40 , y=3.07
+t=0.60 , y=3.85
+t=0.80 , y=4.85
+t=1.00 , y=6.11
+\end{verbatim}
+\end{flushright}
+\end{minipage}
+
+\section{Méthode de Runge-Kutta classique}
+
+La méthode la plus utilisé est la $RK4$ dite classique :
+$$
+\left\{
+\begin{array}{@{}l@{}}
+    s_1 = f(t_n,y_n) \\
+    s_2 = f(t_n+\frac{1}{2}h,y_n+\frac{1}{2}hs_1) \\
+    s_3 = f(t_n+\frac{1}{2}h,y_n+\frac{1}{2}hs_2) \\
+    s_4 = f(t_n+h,y_n+hs_3)\\
+    y_{n+1} = y_n + h \cdot (\frac{1}{6}s_1 + \frac{1}{3}s_2 + \frac{1}{3}s_3 + \frac{1}{6}s_4) \\
+    t_{n+1} = t_n + h
+\end{array}\right.
+$$
+
+\paragraph*{Exemple : } On veut résoudre $\dydt=t+y$, $y(0)=2$, $0\leq t \leq 1$ :
+
+\begin{minipage}{0.45\textwidth}
+\begin{flushleft}
+\begin{matlabcode}
+%% RK4 method
+h = 0.2;
+t = 0:h:1;
+f_ty = @(f,t) f + t;
+y = 2;
+
+for tn = t
+    s1 = f_ty(tn,y);
+    s2 = f_ty(tn+0.5*h,y+0.5*h*s1);
+    s3 = f_ty(tn+0.5*h,y+0.5*h*s2);
+    s4 = f_ty(tn+h,y+h*s3);
+    fprintf('t=%4.4f , y=%4.4f\n',tn,y);
+    y = y + h * ((1/6)*s1 + (1/3)*s2 + (1/3)*s3 + (1/6)*s4);
+end
+\end{matlabcode}
+\end{flushleft}
+\end{minipage}
+\begin{minipage}{0.2\textwidth}
+\phantom{asd}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\begin{flushright}
+\begin{verbatim}
+t=0.0000 , y=2.0000
+t=0.2000 , y=2.4642
+t=0.4000 , y=3.0755
+t=0.6000 , y=3.8663
+t=0.8000 , y=4.8766
+t=1.0000 , y=6.1548
+\end{verbatim}
+\end{flushright}
+\end{minipage}
+
+\section{Erreurs locale et globale de la méthode d'Euler}
+
+Pour Euler, on peut montrer que
+\begin{itemize}
+    \item l'erreur locale vaut $|y(t_1)-y(1)|\approx C \cdot h^2$
+    \item l'erreur globale vaut $|y(t_n)-y(n)|\approx C \cdot h$
+\end{itemize}
 
 \chapter{Code source}
 
