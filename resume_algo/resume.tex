@@ -10,6 +10,7 @@
 \usepackage{fullpage}
 \usepackage{titlesec}
 \usepackage{minted}
+\usepackage{tkz-graph}
 \usepackage[french,onelanguage,boxruled]{algorithm2e}
 
 \makeatletter
@@ -174,6 +175,108 @@ On note un graphe orienté $G=(V,E)$ avec un ensemble $V$ de sommet ($|V|=n$) et
 \end{itemize}
 
 Le théorème d'Euler nous dit que $\sum_{v\in V} deg^+(v) = \sum_{v\in V} deg^-(v) = |E|$
+
+\section{DCEL}
+
+Une graphe DCEL est un type de graphe particulier qui est représenter un ensemble de liste chaîné.
+\begin{itemize}
+    \item Chaque sommet $s$ possède des coordonnées $(s_x,s_y)$ et un ensemble de pointeur $A(v)$ vers chaque arc dont il est l'extrémité initiale.
+    \item Chaque face $f$ possède un arc incident $E(f)$ à son bord extérieur, une liste d'arc $I(f)$ incidents à ses composantes intérieurs (pour représenter les trous).
+    \item Chaque arc $a$ est orienté et possède un sommet-origine $O(a)$, un arc jumeau $J(a)$, une face incidente $F(a)$ et deux arcs $S(a)$ qui est l'arc suivant et $P(a)$ qui est l'arc précédent (on appelle l'arc suivant, l'arc qui suit dans le parcours de l'intégralité de la face incidente).
+\end{itemize}
+
+La figure \ref{fig:DCEL} montre un exemple de DCEL.
+
+\begin{figure}
+    \centering
+    \fbox{
+    \includegraphics[width=0.8\textwidth]{img/dcel.png}}
+    \caption{Exemple de DCEL}
+    \label{fig:DCEL}
+\end{figure}
+
+\chapter{Paradigmes de construction}
+
+\section{Enveloppe convexe}
+
+\begin{algorithm}[H]
+\caption{Recherche de l'enveloppe convexe}
+\label{env_convex}
+\KwData{Un ensemble $P$ de points du plan}
+\KwResult{Une liste $L$ contenant les sommets dans l'ordre horaire}
+Supprimer les points identiques\;
+Trier les points par coordonnées $x$ croissantes puis $y$ croissantes\;
+Mettre les points $p_1$ et $p_2$ dans une liste $L_{sup}$, $p_1$ en premier\;
+\For{$i$ = $3..n$}{
+    Joindre $p_i$ à $L_{sup}$\;
+    \While{$L_{sup}$ contient plus de deux points \textbf{et} les trois derniers points de $L_{sup}$ ne tourne pas à droite}{
+        Effacer l'avant-dernier point de $L_{sup}$\;    
+    }
+}
+Mettre les points $p_n$ et $p_{n-1}$ dans une liste $L_{inf}$, $p_n$ en premier\;
+\For{$i$ = $n-2..1$}{
+    Joindre $p_i$ à $L_{inf}$\;
+    \While{$L_{inf}$ contient plus de deux points \textbf{et} les trois derniers points de $L_{inf}$ ne tourne pas à droite}{
+    Effacer l'avant-dernier point de $L_{inf}$\;}
+}
+Effacer $p_n$ et $p_1$ de $L_{inf}$\;
+Joindre $L_{inf}$ et $L_{sup}$ pour obtenir $L$\;
+\end{algorithm}
+
+L'algorithme \ref{env_convex} est dans la complexité suivante :
+\begin{itemize}
+    \item $O(n \log(n))$ pour le tri
+    \item $O(n)$ pour les deux boucles \textbf{for}
+    \item $O(1)$ pour l'effacement dans les listes
+\end{itemize}
+
+Au total on a un algorithme en $O(n \log(n)) + O(n)$.
+
+\subsection{Diviser pour régner (\textbf{EC})}
+
+La méthode générale est composé de trois parties :
+\begin{enumerate}
+    \item Diviser le problème en petite partie
+    \item Résoudre chaque partie récursivement (jusqu'au cas trivial)
+    \item Fusionner les parties pour obtenir une solution complète
+\end{enumerate}
+
+Pour l'enveloppe convexe on pourrait avoir l'algorithme suivant :
+
+\begin{algorithm}[H]
+\caption{Enveloppe convexe avec la méthode \textbf{EC}}
+\label{ec_env_conv}
+\KwData{Un ensemble $P$ de points du plan}
+\KwResult{Une liste $L$ contenant les sommets dans l'ordre horaire}
+Diviser $S$ par une ligne verticale en deux sous-ensembles $S_1$ et $S_2$\;
+Calculer $EC(S_1)$ et $EC(S_2)$\;
+Trouver les tangentes supérieures et inférieures (voir figure \ref{fig:ec_env_conv})\;
+Fusionner $EC(S_1)$ et $EC(S_2)$\;
+\end{algorithm}
+
+Pour l'algorithme \ref{ec_env_conv}, on à la recherche de tangente supérieures et inférieures en $O(n)$. On a donc $T(n) \leq 2\cdot T(\frac{n}{2}) + O(n) \rightarrow O(n \log(n))$.
+
+\begin{figure}
+    \centering
+    \fbox{
+    \includegraphics[width=0.4\textwidth]{img/ec_env_conv.png}}
+    \caption{Enveloppe convexe avec la méthode de diviser pour régner}
+    \label{fig:ec_env_conv}
+\end{figure}
+
+\section{Balayage du plan}
+
+Méthode générale :
+\begin{itemize}
+    \item Commencer avec une structure vide
+    \item Remplir une queue de priorité avec des événements-points
+    \item Déplacer une ligne de balayage sur tous les objets du plan
+    \item Lors de chaque événement, mettre à jour la structure géométrique et la queue d'évé\-nements
+\end{itemize}
+
+Paire de point la plus proche en $O(n \log(n))$ et en $O(n)$ pour la mémoire.
+
+\chapter{Intersection de segments de droites}
 
 \chapter{Exercices 1}
 \paragraph*{1.1} Il n'est pas possible de réaliser ce problème, si on compte le nombre d'intersection total pour chaque segment, on arrive à $5*3=15$, or, lors de chaque intersections, cela rajoute à chaque fois $2$ intersections, donc on arrive jamais à $15$ puisse que $15$ est impair.
@@ -462,4 +565,126 @@ Solutions :
 \paragraph*{Pénalité sur les fréquences : }Le but est d'éviter les mouvements de faibles coût en mémo\-risant la fréquence d'utilisation de chaque mouvement et en pénalisant de $F\cdot freq(m)$ le mouvement $m$.
 \paragraph*{Recherche locale guidée : } Lorsqu'un optimum local est atteint, l'élément le plus couteux de la solution est pénalisé pour défavoriser sont utilisation future.
 \paragraph*{Forcer des mouvements : } Casser la structure d'une solution en identifiant les mouvements jamais choisis durant les $K$ dernières itérations. Pour QAP, on lit cela directement dans la matrice $T$.
+
+\chapter{Algorithmes génétiques, recherche par dispersion et essaims particulaires}
+
+\section{Population de solution}
+Il est facile d'obtenir beaucoup de solution différentes pour un problème. L'idée est de construire de nouvelle solutions précédemment obtenues et de disperser les solutions générées dans tout l'ensemble des solutions. On suppose que la combinaison des solutions peut sélectionner les bonnes caractéristiques de chacune.
+
+\section{Algorithmes évolutionnaires}
+Darwin : les êtres humains transmettes des caractéristiques utiles à leurs enfants. Le néo-darwinisme : la mutation génétique.
+
+\begin{center}
+    \includegraphics[width=0.9\textwidth]{img/schema.png}
+\end{center}
+
+\begin{algorithm}[H]
+\caption{Générer une population de $\mu$ solutions}
+\Repeter{Jusqu'à ce qu'un critère d'arrêt soit satisfait}{
+    Sélectionner des solutions pour la reproduction (parents)\;
+    Combiner des solutions pour obtenir $\lambda$ enfants provisoires\;
+    Appliquer un opérateur de mutation/réparation à chaque enfant\;
+    Évaluer la performance de chaque enfant\;
+    Parmi la population complète, sélectionner $\mu$ solutions pour la prochaine population\;
+}
+\end{algorithm}
+
+\subsection{Sélection aléatoire}
+
+\paragraph*{La roulette : } On attribue à chaque individu une valeur de performance, on somme toutes ces valeurs et on tire au hasard un nombre entre $0$ et cette valeur pour tomber sur l'élément à sélectionner.
+
+\paragraph*{Échantillonnage stochastique universel : } On tire à intervalle régulier chaque individu (on peut tomber deux fois sur le même !).
+
+\paragraph*{Rang : } On trie les solutions et on calcule le rang $r$ de l'individu choisi : $r = \mu \cdot (1-\sqrt[P]{U(0.1)})$ ($U(n,m)$ tire un nombre au hasard entre $n$ et$m$), avec :
+\begin{itemize}
+    \item $p=1$ : sélection aléatoire uniforme
+    \item $p>1$ : les meilleurs individu sont favorisés
+\end{itemize}
+
+\subsection{Opérateurs de croisement génétique uniforme}
+Les solutions sont représentées par des vecteurs de taille donnée. On tire aléatoirement les composantes des nouvelles solutions, les "enfants" en copiant aléatoirement les composantes des deux parents.
+
+Le croisement peut être partiel (par exemple si le vecteur doit respecter la contrainte que les éléments sont une permutations des nombres de $1$ à $n$).
+
+\paragraph*{Croisement par vecteur : } On coupe en $1$, $2$, ... et on prend l'un ou l'autre pour chaque partie de l'enfant.
+
+\paragraph*{Opérateur OX : } respect des sous-séquences : on prend une sous-séquence et on recopie, à la suite, les éléments non pris.
+
+\subsection{Opérateurs de mutation}
+Vecteurs $(0-1)$ : modifier chaque bit aléatoirement avec la même probabilité. Modifier un nombre donné de bits aléatoirement.
+
+\subsection{Gestion de la population}:
+
+\begin{itemize}
+    \item \textbf{Remplacement générationnel} : Seules les enfants survivent d'une génération à l'autre ($\lambda = \mu$).
+    \item \textbf{Stratégie évolutionnaire} : Seuls les $\mu$ meilleur enfants sont conservés ($\lambda > \mu$).
+    \item \textbf{Remplacement stationnaire} : Remplacer aléatoirement $\lambda$ parents par des enfants ($\lambda$ est petit (1 ou 2)).
+    \item \textbf{Stratégie élitiste} : De la population complète $\lambda + \mu$ on ne conserve que les $\mu$ meilleurs.
+\end{itemize}
+
+Plus une population est grande implique :
+\begin{itemize}
+    \item Une plus grande diversité
+    \item Des meilleurs solutions sont obtenus après convergence
+    \item Un taux de convergence plus lent et de plus grand temps de calcul
+\end{itemize}
+
+\section{Recherche par dispersion}
+
+\begin{algorithm}[H]
+\caption{Recherche par dispersion}
+\Repeter{Jusqu'à ce qu'un critère d'arrêt soit satisfait}{
+    Créer une population diversifié\;
+    Améliorer/réparer toutes les solutions de la populations\;
+    Sélectionner un ensemble de référence avec des solutions diversifiées et élites\;
+    \Repeter{L'ensemble de référence est modifié}{
+        \For{Chaque sous-ensembles de l'ensemble de référence}{
+             Combiner les solutions du sous-ensemble\;
+             Améliorer/réparer la solution combiné\;
+             Inclure la nouvelle solution dans la population\;        
+        }
+        Mettre à jour l'ensemble de référence (conserver les solutions les meilleurs et les plus diversifiées)
+    }
+}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{GRASP-PR}
+    Générer une population de $\mu$ solutions différentes avec une recherche gloutonne randomisée et une recherche locale\;
+    \Repeter{jusqu'à ce qu'un critère d'arrêt soit satisfait}{
+        Générer une nouvelle solution $s$ avec une recherche gloutonne randomisée et une recherche locale\;
+        Sélectionner une solution aléatoire $s'$ dans la population\;
+        Effectuer un chemin de liaison entre $s$ et $s'$\;
+        \If{la meilleur solution $s^*$ trouvée sur le chemin est meilleur qu'une certaines solutions de la population}{
+            $s^*$ remplace une solution de la population plus mauvaise que $s^*$\;       
+        }
+    }
+\end{algorithm}
+
+\section{Méthodes à particules}
+
+Une particule est une solution (en principe un vecteur $x$ de réels (position)). Les particules ont des interactions entre elles, elles n'en créent pas d'autres.
+
+La particule $i$ est attirée par une force $f_{ij}$ vers la particule $j$. Les particules ont une vitesse et éventuellement une charge électrique. La nouvelle position d'une particule dépend de la force qui s'applique sur elle.
+
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\caption{Méthodes à particules}
+    Générer une position aléatoire $x_i$ pour chaque particule\;
+    \tcp*[l]{Pour les essaims particulaires : $+$ un vecteur de vitesse}
+    \Repeter{jusqu'à ce qu'un critère d'arrêt soit satisfait}{
+        \For{Chaque particule $i$}{
+            Effectuer une recherche locale\;
+            Calculer les forces $f_{ij}$\;
+            Déplacer $i$ dans la nouvelle position $x_i$\;        
+        }
+    }
+\end{algorithm}
+
+\section{Exercices}
+
+\paragraph*{8.1 : } Si on code un binaire on a des problèmes si on croise des nombres proches, par exemple 127 et 128. Solution : prendre un code de Gray.
+
+\paragraph*{8.2 : } $(4,2,3,0,1,0)$ : $(4,6,2,5,1,3)$, $(0,0,3,1,2,0)$ : $(1,2,,,4,3)$... impossible. À l'élément $i$, on doit avoir un nombre plus petit ou égale à $n-i$.
+
 \end{document}
