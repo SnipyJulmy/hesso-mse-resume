@@ -1,0 +1,62 @@
+\documentclass[9pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{xlop}
+\usepackage{minted}    
+\usepackage[top=0.5cm, bottom=0.5cm, left=0.5cm, right=0.5cm]{geometry}
+\author{Sylvain Julmy}
+\newcommand{\z}{\mathbb{Z}}
+\newcommand{\f}{\mathbb{F}}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{0cm}
+% Python
+\newminted{python}{frame=single, framesep=6pt, breaklines=true, fontsize=\scriptsize}
+\newmintedfile{python}{frame=single, framesep=6pt, breaklines=true, fontsize=\scriptsize}
+
+\begin{document}
+\textbf{Data Preprocessing :}
+\textbf{Accuracy} : errors in recorded values, outlier values (unexpected) ex: enormous price for a cheap item once (introduced 0 by mistake)
+\textbf{Completeness} : lacking attribute values, only aggregate data, … ex: sometimes type of payment (card/cash) not recorded
+\textbf{Consistency} : discrepancies in values used ex: some department codes with leading 0, some without
+\textbf{Timeliness} : data missing or icomplete for some time, but eventually complete ex: data recorded by person too late for monthly analysis, but available afterwards
+\textbf{Believability} : Not trusted by users ex: due to a previous bug (now corrected), people distrust system and use manual alternatives
+\textbf{Interpretability} : ambiguous data ex: adjustment orders (not real but to correct mistake/complaint) can be confused as real orders.
+
+\textbf{Tasks} : \textbf{Data cleaning} (fill missing value, smoothing, outliers, inconsistencies), \textbf{Data integration} (multiple database,...), \textbf{Data reduction} (Dimensionality reduction,Numerosity reduction, Data compression), \textbf{Data transformation}.
+
+\textbf{Données incomplètes} : ignoré tuple, remplir à la main, automatiquement (mean,std,...). \textbf{Clustering} : detect and remove outliers. Coefficient de corrélations : $p'_k = (p_k-\bar{p}/\sigma_p), q'_k = (q_k-\bar{q}/\sigma_q), corr(p,q)=p'\cdot q'$. \textbf{Mode of data} : données qui apparait le plus, \textbf{midrange of data} : $min + max / 2$, $\sigma_p=\sqrt{v(p)}, v(p)=\sum (p_i-\bar{p})^2$.
+
+\textbf{Data reduction} : \textbf{Dimensionality reduction} (attribut inutiles), techniques : Wavelet transforms, Principal Component Analysis, Supervised and nonlinear techniques. \textbf{Numerosity reduction} : régression, histogramme, data cube. \textbf{Data compression} : Audio/video compression, string compression.
+
+\textbf{Data Transformation :} \textbf{min-max} : $v'=\frac{v - min_A}{max_A - min_A}\cdot (new_{max_A} - new_{min_A})+new_{min_A}$. \textbf{z-score} : $v'=\frac{v-\bar{A}}{\sigma_A}$. \textbf{decimal-scaling} : $v'=\frac{v}{10^j}$  $j$ is the smallest integer such that $|max(v)| < 1$. \textbf{Binnings method for data smoothing} : D'abord, séparer les données en $n$ groupe différent. Puis, pour chaque groupe, remplacer par la moyenne (\textbf{smoothing by mean}), le min ou max le plus proche (\textbf{smoothing by boundaries}), la médiane \textbf{smoothing by median}.
+
+\textbf{Market-Basket analysis :} permet de trouver les groupes d'articles qui ont tendance à apparaitre ensemble. On dispose des transactions. Soit $I$ un ensemble d'article, $D$ un ensemble de transactions, chaque transactions $T_j$ est un ensemble d'article. Règle de dissociation (comme associations mais peut avoir \textit{non}).
+$Support(X => Y) = P ( X et Y )$.
+$Confiance( X =>Y ) = P ( Y | X ) = P ( X et Y ) / P (X)$.
+$Lift(X => Y)= Confiance / Support$. \textbf{Agrégation}: agréger produits très similaires en produit moins spécifique. \textbf{Taxonomie}: Généralisation par catégorisation (p.ex : “Vêtement"). Á partir de seuil définis par nous $min_{sup}, min_{conf}$, trouver les règles intéressantes (juste regarde si ok ou non).
+
+\textbf{Algorithme d'extraction de règles :} calculer les fréquences de chaque item (L1), supprimer de $L_1$ les éléments plus petit que $min_{sup}$, on calcule toute les combinaisons 2 à 2 d'éléments, à partir de $K=3$ combiner seulement les éléments avec le même départ, enlever de $C$ les éléments dont au moins un des sous-ensemble n'est pas présent dans $L$ précédent, calculer $L$ comme étant $C$ sans les éléments avec le support dans T $\leq$ $min_{sup}$, arrêter quand on ne fait plus de combinaisons. Prendre dans le sac tous les éléments non-traçées.
+\textbf{Phase 2 :} Pour chaque éléments qui ne sont pas du premier niveaux, calculer $conf(X=>Y)/conf(X)$ (faire avec $Y$ aussi).
+
+\textbf{Partitionnement :} Diviser $T$ en $n$ partition et appliquer $apriori()$ sur chacune et prendre les unions des résultats. Avantages : s'adapte à la mémoire dispo, facilement //. Défaut : on peut avoir bcq de candidat au deuxième passage.
+
+\textbf{Decision Tree :} Accuracy rate : $\frac{n_{pred}}{n_{true}}$, évaluation du modèle : accuracy, speed, robustness, scalability. \textbf{Basic algorithme} : Tree is constructed in a top-down recursive divide-and-conquer manner, At start, all the training examples are at the root, Attributes are categorical, Examples are partitioned recursively based on selected attributes. \textbf{Condition d'arrêt} : no more sample, plus d'attribut à splitter, All samples for a given node belong to the same class. \textbf{Sélection d'attribut :} plus gros gain de performance : $Gain(A)=Info(D)-Info_A(D), Info(D)=-\sum_{i=1}^mp_i\cdot\log_2(p_i), Info_A(D)=\sum_{j=1}^v\frac{|D_j|}{|D|}\times I(D_j)$. $SplitInfo_A(D)=-\sum_{j=1}^v\frac{|D_j|}{|D|}\times\log_2(\frac{|D_j|}{|D|})$. $GainRatio = Gain(A)-SplitInfo(A)$. $gini(D)=1-\sum_{j=1}^np^2_j$, $p_j$ est la fréquence relative $\frac{n_j}{n_{tot}}$. $gini_A(D)=\frac{D_1}{D}gini(D_1)+\frac{D_2}{D}gini(D_2)$. $\Delta gini(A)=gini(D)-gini_A(D)$.
+\textbf{Information gain} : biaisé au travers des attributs multi-valués.
+\textbf{Gain ratio} : tendance à choisir des séparations mal balancée quand des partitions sont plus petite que d’autre.
+\textbf{Gini index} : biaisé au travers des attributs multi-valués, difficultés avec beaucoup de classe, à tendance à favoriser les tests qui donnent des partitions et des “purity” équilibrés.
+\textbf{Overfitting :} preprunning (ne split pas un noeud si le gain est en dessous des certains treshold), postprunning (supprime les branches qui minimise une certaine erreur).
+
+\textbf{Clustering :} hiérarchique (analyse détaillé) ou non (gd ensembles de données). \textbf{HAC} : démarre avec $1$ cluster par élément, groupe les clusters les plus similaire $2$ par $2$ jusqu'à atteindre $k$ cluster voulus. \textbf{Saut minimum} : valeur maximum de la fonction de similarité. \textbf{Diamètre} : valeur minimum de la fonction de similarité. \textbf{Moyenne} : faire la moyenne de toutes les combinaisons. \textbf{K-means} : On démarre avec $k$ centroid, lors de chaque itérations on fait : attribuer chaque point au centroid le plus proche, recalculer le centre des centroids (vecteurs moyen des distances aux centroid). Faire jusqu'à convergence ou bien un nombre d'itération fixé atteint. Distances : distance euclidienne, distance de manhatan, similarité par le cosinus $1-\frac{\vec{x}\cdot\vec{y}}{|\vec{x}|\cdot|\vec{y}|}$. Complexité : $O(iknm)$ iteration, taille vecteur, nombre cluster, nombre sample. Buckshot : faire premier et utiliser comme base pour k-mean. Qualité du clustering : $Purity(\omega_i)=\frac{1}{n}max_j(n_{ij}), j\in C$.
+
+\textbf{Data warehouse} Type de schéma : \textbf{Star} une fact table relié à des dimensions table, \textbf{SnowFlake} idem mais avec des dimensions table qui peuvent être normalisé. \textbf{ Fact Constellation} comme star mais avec plusieurs fact table. Utilisation des schémas : datawarehouse plutôt constellation et datamart plutôt star ou snowflake. Type de warehouse : \textbf{enterprise warehouse} sujet qui concerne toute l'entreprise (données détaillées et summarisé), \textbf{datamart} un groupe spécifique d'utilisateur (département) les données sont souvent summarisé (par mois p.example). \textbf{Virtual warehouse} un ensemble de vue sur une base de données opérationnelle. Une \textbf{fact table} est composé de clé (vers les autres \textbf{tables de dimensions} (information sur différents objets)) et de mesure. \textbf{Star net query model} Groupe de ligne qui émanent d'un point central, chaque ligne est une dimension et chaque point de la ligne est un niveau de la dimensions. \textbf{Pourquoi DW} competitive advantage, business productivity, customer relationship management, cost reduction. \textbf{OLTP vs OLAP} label : users, function, DB design, data, usage, access, unit of work, records accessed, users, metric, DB size. \textbf{Architecture} data sources -> data storage -> OLAP engine -> Front-end tools. \textbf{Opérations sur un cube} : \textbf{roll-up} -> summarize data (ville -> pays), \textbf{drill-down} -> inverse of roll-up, \textbf{slice} -> where en SQL, \textbf{dice} -> select en SQL, \textbf{Pivot} -> reorient cube. Si chaque dimensions (4) à 5 niveaux -> donne $5^4$ cuboïd. Facteur du nombre de niveaux par dimensions. Le cuboïde avec $0$ dimensions s'appelle $apex$. \textbf{Base cuboïde} : cuboïde de base avec toutes les dimensions.
+
+\newpage
+\textbf{Conjontive query} : AND.
+
+\end{document}

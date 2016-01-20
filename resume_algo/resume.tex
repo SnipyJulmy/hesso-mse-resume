@@ -278,6 +278,17 @@ Paire de point la plus proche en $O(n \log(n))$ et en $O(n)$ pour la mémoire.
 
 \chapter{Intersection de segments de droites}
 
+\chapter{Recherche d'intervalle orthogonaux}
+
+\section{Énumération en $1$ dimension}
+Étant donné un ensemble de point dynamique avec une clé, trouver tous les éléments dans l'intervalle $[x,x']$ : utiliser un arbre binaire de recherche $T$ dans lequel on stocke tous les éléments dans les feuilles. Les valeurs des nœuds sont la valeur de l'élément le plus à droite du sous-arbre gauche. \textbf{Solution :}
+\begin{itemize}
+    \item Partir de la racine avec deux pointeurs
+    \item Pour le premier pointeur, si $x <= elt$ descendre à gauche, sinon descendre à droite. Répéter jusqu'à atteindre une feuille.
+    \item Pour le deuxième pointeur, si $x' > elt$ descendre à droite, sinon descendre à gauche. Répéter jusqu'à atteindre une feuille.
+    \item Depuis le premier pointeur, 
+\end{itemize} 
+
 \chapter{Exercices 1}
 \paragraph*{1.1} Il n'est pas possible de réaliser ce problème, si on compte le nombre d'intersection total pour chaque segment, on arrive à $5*3=15$, or, lors de chaque intersections, cela rajoute à chaque fois $2$ intersections, donc on arrive jamais à $15$ puisse que $15$ est impair.
 
