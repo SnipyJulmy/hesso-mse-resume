@@ -28,7 +28,7 @@
 \textbf{Believability} : Not trusted by users ex: due to a previous bug (now corrected), people distrust system and use manual alternatives
 \textbf{Interpretability} : ambiguous data ex: adjustment orders (not real but to correct mistake/complaint) can be confused as real orders.
 
-\textbf{Tasks} : \textbf{Data cleaning} (fill missing value, smoothing, outliers, inconsistencies), \textbf{Data integration} (multiple database,...), \textbf{Data reduction} (Dimensionality reduction,Numerosity reduction, Data compression), \textbf{Data transformation}.
+\textbf{Tasks} : \textbf{Data cleaning} (fill missing value, smoothing, outliers, inconsistencies), \textbf{Data integration} (multiple database,...), \textbf{Data reduction} (Dimensionality reduction,Numerosity reduction, Data compression), \textbf{Data transformation} : Smoothing, Attribute/feature construction, Aggregation
 
 \textbf{Données incomplètes} : ignoré tuple, remplir à la main, automatiquement (mean,std,...). \textbf{Clustering} : detect and remove outliers. Coefficient de corrélations : $p'_k = (p_k-\bar{p}/\sigma_p), q'_k = (q_k-\bar{q}/\sigma_q), corr(p,q)=p'\cdot q'$. \textbf{Mode of data} : données qui apparait le plus, \textbf{midrange of data} : $min + max / 2$, $\sigma_p=\sqrt{v(p)}, v(p)=\sum (p_i-\bar{p})^2$.
 
@@ -54,9 +54,48 @@ $Lift(X => Y)= Confiance / Support$. \textbf{Agrégation}: agréger produits tr�
 
 \textbf{Clustering :} hiérarchique (analyse détaillé) ou non (gd ensembles de données). \textbf{HAC} : démarre avec $1$ cluster par élément, groupe les clusters les plus similaire $2$ par $2$ jusqu'à atteindre $k$ cluster voulus. \textbf{Saut minimum} : valeur maximum de la fonction de similarité. \textbf{Diamètre} : valeur minimum de la fonction de similarité. \textbf{Moyenne} : faire la moyenne de toutes les combinaisons. \textbf{K-means} : On démarre avec $k$ centroid, lors de chaque itérations on fait : attribuer chaque point au centroid le plus proche, recalculer le centre des centroids (vecteurs moyen des distances aux centroid). Faire jusqu'à convergence ou bien un nombre d'itération fixé atteint. Distances : distance euclidienne, distance de manhatan, similarité par le cosinus $1-\frac{\vec{x}\cdot\vec{y}}{|\vec{x}|\cdot|\vec{y}|}$. Complexité : $O(iknm)$ iteration, taille vecteur, nombre cluster, nombre sample. Buckshot : faire premier et utiliser comme base pour k-mean. Qualité du clustering : $Purity(\omega_i)=\frac{1}{n}max_j(n_{ij}), j\in C$.
 
-\textbf{Data warehouse} Type de schéma : \textbf{Star} une fact table relié à des dimensions table, \textbf{SnowFlake} idem mais avec des dimensions table qui peuvent être normalisé. \textbf{ Fact Constellation} comme star mais avec plusieurs fact table. Utilisation des schémas : datawarehouse plutôt constellation et datamart plutôt star ou snowflake. Type de warehouse : \textbf{enterprise warehouse} sujet qui concerne toute l'entreprise (données détaillées et summarisé), \textbf{datamart} un groupe spécifique d'utilisateur (département) les données sont souvent summarisé (par mois p.example). \textbf{Virtual warehouse} un ensemble de vue sur une base de données opérationnelle. Une \textbf{fact table} est composé de clé (vers les autres \textbf{tables de dimensions} (information sur différents objets)) et de mesure. \textbf{Star net query model} Groupe de ligne qui émanent d'un point central, chaque ligne est une dimension et chaque point de la ligne est un niveau de la dimensions. \textbf{Pourquoi DW} competitive advantage, business productivity, customer relationship management, cost reduction. \textbf{OLTP vs OLAP} label : users, function, DB design, data, usage, access, unit of work, records accessed, users, metric, DB size. \textbf{Architecture} data sources -> data storage -> OLAP engine -> Front-end tools. \textbf{Opérations sur un cube} : \textbf{roll-up} -> summarize data (ville -> pays), \textbf{drill-down} -> inverse of roll-up, \textbf{slice} -> where en SQL, \textbf{dice} -> select en SQL, \textbf{Pivot} -> reorient cube. Si chaque dimensions (4) à 5 niveaux -> donne $5^4$ cuboïd. Facteur du nombre de niveaux par dimensions. Le cuboïde avec $0$ dimensions s'appelle $apex$. \textbf{Base cuboïde} : cuboïde de base avec toutes les dimensions.
+\textbf{Data warehouse} Type de schéma : \textbf{Star} une fact table relié à des dimensions table, \textbf{SnowFlake} idem mais avec des dimensions table qui peuvent être normalisé. \textbf{ Fact Constellation} comme star mais avec plusieurs fact table. Utilisation des schémas : datawarehouse plutôt constellation et datamart plutôt star ou snowflake. Type de warehouse : \textbf{enterprise warehouse} sujet qui concerne toute l'entreprise (données détaillées et summarisé), \textbf{datamart} un groupe spécifique d'utilisateur (département) les données sont souvent summarisé (par mois p.example). \textbf{Virtual warehouse} un ensemble de vue sur une base de données opérationnelle. Une \textbf{fact table} est composé de clé (vers les autres \textbf{tables de dimensions} (information sur différents objets)) et de mesure. \textbf{Star net query model} Groupe de ligne qui émanent d'un point central, chaque ligne est une dimension et chaque point de la ligne est un niveau de la dimensions. \textbf{Pourquoi DW} competitive advantage, business productivity, customer relationship management, cost reduction. \textbf{OLTP vs OLAP} label : users, function, DB design, data, usage, access, unit of work, records accessed, users, metric, DB size. \textbf{Architecture} data sources -> data storage -> OLAP engine -> Front-end tools. \textbf{Opérations sur un cube} : \textbf{roll-up} -> summarize data (ville -> pays), \textbf{drill-down} -> inverse of roll-up, \textbf{slice} -> where en SQL, \textbf{dice} -> select en SQL, \textbf{Pivot} -> reorient cube. Si chaque dimensions (4) à 5 niveaux -> donne $5^4$ cuboïd. Facteur du nombre de niveaux par dimensions. Le cuboïde avec $0$ dimensions s'appelle $apex$. \textbf{Base cuboïde} : cuboïde de base avec toutes les dimensions. \textbf{Data transformation} : convertir les données des sources vers un modèle unifié.
 
 \newpage
-\textbf{Conjontive query} : AND.
+
+\textbf{Vecteur d'incidence} : vecteur binaire qui correspond à si un mot est dans chaque document ou non. OR-query $O(x+y)$. Si on a plusieurs OR avec des AND, il faut faire la somme des $df$ et commencer par le plus petit. 
+
+TODO
+
+skip pointer
+jaquard avec exemple
+tf idf
+score calcul
+cosinus similarity
+tf idf tableau
+mettre algo cosine score
+inverted index
+stemming
+lemming,...
+wild-card query
+precision recall ect... expliquer + formule
+MAP
+MAP score
+r-score
+f1-score
+non-interpolated precision
+shingling
+min-hashing
+localitty sensitive
+jaccard similarity
+IR description
+term-document incidence matrix
+IR architecture
+search model
+tokenization
+normalization
+stemming
+stop words
+query processing AND / OR
+Posting list
+AND : tu commences au début des deux listes , tu incrémentes la liste ayant le nombre le plus petit si intersection tu récupères le numéro puis tu incrémente les 2 terminé quand au bout d’une liste.
+
+
+
 
 \end{document}
