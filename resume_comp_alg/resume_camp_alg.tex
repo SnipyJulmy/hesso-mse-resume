@@ -1,4 +1,4 @@
-\documentclass[11pt,a4paper]{report}
+\documentclass[a4paper,9pt]{extarticle}
 \usepackage[utf8]{inputenc}
 \usepackage[francais]{babel}
 \usepackage[T1]{fontenc}
@@ -7,11 +7,16 @@
 \usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{graphicx}
-\usepackage{fullpage}
 \usepackage{titlesec}
 \usepackage{amsthm}
 \usepackage{minted}
-\usepackage[top=1cm]{geometry}
+\usepackage{mdframed}
+\usepackage{python}
+\usepackage[top=1cm, bottom=1cm, left=1cm, right=1cm]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{amsmath,amssymb,textcomp}
 
 % Plain text
 \newminted{matlab}{frame=single, framesep=6pt, breaklines=true, breakanywhere, fontsize=\scriptsize}
@@ -55,9 +60,258 @@
 
 \begin{document}
 
-\maketitle
+\section{Interpolation et splines}
 
-\tableofcontents
+On donne $n+1$ points $(x_i,y_i)$ où $x_i\neq x_j$ si $i\neq j$. On cherche un polynôme de degré $n$ : $p_n(x)=a_nx^n+a_{n-1}^{n+1}+a_1x+a_0$ où $a_i\in \mathbb{R}(0 \leq i \leq n)$, tel que $p_n(x_i)=y_i$.
+
+\section{Polynôme d'interpolation de Lagrange}
+
+On sait qu'il existe \textbf{exactement un} polynôme d'interpolation de degrés $n$ ou inférieur qu'on appelle \textbf{polynôme d'interpolation}. Avec $n=3$ :
+$l_0(x)=\frac{(x-x_1)(x-x_2)(x-x_3)}{(x_0-x_1)(x_0-x_2)(x_0-x_3)}$. $l_0(x)$ est un polynôme cubique avec les propriétés suivantes : $l_0(x_0)=1,l_0(x_1)=l_0(x_2)=l_0(x_3)=0$. On calcule ensuite $l_1(x)$,$l_2(x)$ et $l_3(x)$ avec :
+\begin{align*}
+l_0(x)=\frac{(x-x_1)(x-x_2)(x-x_3)}{(x_0-x_1)(x_0-x_2)(x_0-x_3)} \\
+l_1(x)=\frac{(x-x_0)(x-x_2)(x-x_3)}{(x_1-x_0)(x_1-x_2)(x_1-x_3)} \\
+l_2(x)=\frac{(x-x_0)(x-x_1)(x-x_3)}{(x_2-x_0)(x_2-x_1)(x_2-x_3)} \\
+l_3(x)=\frac{(x-x_0)(x-x_1)(x-x_2)}{(x_3-x_0)(x_3-x_1)(x_3-x_2)}
+\end{align*}
+Le polynôme d'interpolation est donnée par :
+$$
+p_3(x) = y_0l_0(x)+y_1l_1(x)+y_2l_2(x)+y_3l_3(x)
+$$
+On désire évaluez $x$ :
+\begin{align*}
+\lambda_0 = \frac{1}{(x_0-x_1)(x_0-x_2)(x_0-x_3)} \\
+\lambda_1 = \frac{1}{(x_1-x_0)(x_1-x_2)(x_1-x_3)} \\
+\lambda_2 = \frac{1}{(x_2-x_0)(x_2-x_1)(x_2-x_3)} \\
+\lambda_3 = \frac{1}{(x_3-x_0)(x_3-x_1)(x_3-x_2)}
+\end{align*}
+On définis $\mu_i=\frac{\lambda_i}{x-x_i}$, $(0\leq i \leq 3)$, on peut maintenant mettre $p_3(x)$ sous la forme :
+$$
+p_3(x)=(x-x_0)(x-x_1)(x-x_2)(x-x_3)\cdot (y_0\mu_0+y_1\mu_1+y_2\mu_2+y_3\mu_3)
+$$
+
+Si tous les $y_i$ sont égaux à $1$, il en découle que $(x-x_0)(x-x_1)(x-x_2)(x-x_3)=\frac{1}{\mu_0+\mu_1+\mu_2+\mu_3}$. On peut donc écrire $p_3(x)$ comme suit :
+$$
+p_3(x) = \frac{y_0\mu_0+y_1\mu_1+y_2\mu_2+y_3\mu_3}{\mu_0+\mu_1+\mu_2+\mu_3}
+$$
+
+\section{Polynôme d'interpolation de Newton}
+
+$p_3(x)=c_0+c_1(x-x_0)+c_2(x-x_0)(x-x_1)+c_3(x-x_0)(x-x_1)(x-x_2)$ avec
+\begin{align*}
+&p_3(x_0)=c_0 &=y_0\\
+&p_3(x_1)=c_0+c_1(x-x_0) &=y_1\\
+&p_3(x_2)=c_0+c_1(x-x_0)+c_2(x-x_0)(x-x_1) &=y_2\\
+&p_3(x_3)=c_0+c_1(x-x_0)+c_2(x-x_0)(x-x_1)+\\&c_3(x-x_0)(x-x_1)(x-x_2) &=y_3
+\end{align*}
+
+On utilise la notation $c_0=f[x_0],c_1=f[x_0,x_1],c_2=f[x_0,x_1,x_2],c_3=f[x_0,x_1,x_2,x_3]$ et on définit les polynômes de degrés $0$ : $q_i(x)=y_i=f[x_i]$, $0\leq 1\leq 3$. On peut ensuite construire un tableau $T$:
+$$
+\begin{array}{c|cccc}
+x_0 & f[x_0]\\
+x_1 & f[x_1] & f[x_0,x_1]\\
+x_2 & f[x_2] & f[x_1,x_2] & f[x_0,x_1,x_2]\\
+x_3 & f[x_3] & f[x_2,x_3] & f[x_1,x_2,x_3] & f[x_0,x_1,x_2,x_3]
+\end{array}
+$$
+avec $T_{i,j} = \frac{T_{i-1,j-1}-T_{i-1,j}}{x_{i-1}-x_{i}}$, \textbf{$T_{1,1}=f[x_0,x_1]$}. $i$ est la auteur (ligne) et $j$ la colonne.
+
+\section{Erreur d'interpolation}
+
+Si on approche une fonction $y=f(x)$ par le polynôme qui interpole les points $x_i,(0 \leq i \leq n)$. Si la fonction $f(x)$ est $n+1$ fois continûment dérivable et si $x_0 \leq x \leq x_n$, alors on a la borne suivante pour l'erreur : 
+\begin{align*}
+|f(x)-p_n(x)|\leq\frac{M_{n+1}}{(n+1)!}|\prod^n_{i=0}(x-x_i)|\\
+M_{n+1} := \max_{\epsilon\in[a,b]}|f^{(n+1)}(\epsilon)|
+\end{align*}
+
+Si les nœuds sont équipartitis et si $n\in\{1,2,3\}$ :
+\begin{align*}
+&\text{Interpolation linéaire : }x_1=x_0+h \\
+&|f(x)-p_1(x)|\leq \frac{1}{8}M_2h^2,x\in [x_0,x_1] \\
+&\text{Interpolation quadratique : }x_1=x_0+h,x_2=x_0+2h \\
+&|f(x)-p_2(x)|\leq \frac{\sqrt{3}}{27}M_3h^3,x\in [x_0,x_2]\\
+&\text{Interpolation cubique : }x_1=x_0+h,x_2=x_0+2h,x_3=x_0+3h \\
+&|f(x)-p_3(x)|\leq \frac{3}{128}M_4h^4,x\in[x_1,x_2]\\
+&|f(x)-p_3(x)|\leq \frac{1}{24}M_4h^4,x\in[x_0,x_1]\cup[x_2,x_3]\\
+\end{align*}
+
+Si le degrés est trop grand, ne pas utiliser des nœuds équidistants, mais plutôt utiliser les abscisses de Tchebychev : $x_i=5\cos(\frac{2(n-i)+1}{2n+2}\pi)$, $0\leq i\leq n$.
+
+\section{Spline cubique}
+
+On définit $h_i=x_{i+1}-x_i$, $i=1,2,...,n-1$, le spline cubique $s(x)$ sur chaque sous-intervalle $[x_i,x_i+1]$ est un polynôme cubique :
+\begin{align*}
+& s_i(x)=a_i(x-x_i)^3+b_i(x-x_i)^2+c_i(x-x_i)+d_i \\
+& s'_i=3a_i(x-x_i)^2+2b_i(x-x_i)+c_i(x-xi) \\
+& s''_i=6a_i(x-x_i)+2b_i(x-x_i)
+\end{align*}
+On a pour chaque sous-intervalle $[x_i,x_{i+1}]$ :
+\begin{align*}
+& s_i(x_i) = d_i &= y_i\\
+& s_i(x_{i+1}) = a_ih_i^3+b_ih_i^2+c_ih_i+d_i &= y_{i+1}\\
+& s_i'(x_i) = c_i\\
+& s_i'(x_{i+1}) = 3a_ih_i^2+2b_ih_i+c_i \\
+& s''_i(x_i) = 2_bi &=y_i''\\
+& s''_i(x_{i+1}) = 6a_ih_i+2b_i &= y_{i+1}''
+\end{align*}
+On en ressort les coefficients suivants :
+\begin{align*}
+& a_i = \frac{1}{6h_i}(y''_{i+1}-y_i'')\\
+& b_i = \frac{1}{2}y''_i\\
+& c_i = \frac{1}{h_i}(y_{i+1}-y_i)-\frac{1}{6}hi(y''_{i+1}+2y''_i)\\
+& d_i = y_i
+\end{align*}
+Avec $n=5$ on obtient le système suivant :
+$$
+\begin{array}{|cccc|l|}
+y_1'' & y_2'' & y_3'' & y_4'' & 1 \\
+\hline
+4 & 1 &   &   & \frac{6}{h^2}(y_2-2y_1+y_0)-y''_0 \\
+1 & 4 & 1 &   & \frac{6}{h^2}(y_3-2y_2+y_1) \\
+  & 1 & 4 & 1 & \frac{6}{h^2}(y_4-2y_3+y_2) \\
+  &   & 1 & 4 & \frac{6}{h^2}(y_5-2y_4+y_3)-y''_5 \\ \hline
+\end{array}
+$$
+
+\section{Paramétrisation d'une courbe}
+On a $f:[a,b] \rightarrow \mathbb{R}^2$ et $t \rightarrow (x(t),y(t))$ avec $x(t)$ et $y(t)$ des fonctions. Par exemple, le cercle unitaire possède comme paramétrisation $f:[0,2\pi[ \rightarrow \mathbb{R}$ et $t\rightarrow (\cos(t),\sin(t))$.
+
+On donne $n$ points $(x_i,y_i)$, on approche les deux inconnues $x(t),y(t)$ par deux splines naturelles. On prend comme distance $t_{i+1}-t_i$ comme la distance entre les points $(x_i,y_i)$ et $(x_{i+1},y_{i+1})$ et $t_0=0$.
+
+\paragraph*{Exemple :}
+
+TODO
+
+\section{Formule du Trapèze}
+Approximation d'une intégrale par l'aire du trapèze :
+$$
+\int_a^bf(x)dx\approx\frac{b-a}{2}[f(a)+f(b)]
+$$
+On divise l'intervalle $[a,b]$ en $n$ sous-intervalles de même longueur $h := \frac{b-a}{n}$, les extrémités sont données par $x_j=a+jh,\ j=0,1,2,...,n$ et ont additionne les aires de chaque trapèze (pour n=$4$):
+$$
+h[\frac{1}{2}f(x_0)+f(x_1)+f(x_2)+f(x_3)+\frac{1}{2}f(x_4)]
+$$
+et la formule générale :
+$$
+T(h)=h[\frac{1}{2}f(a)+\sum_{j=1}^{n-1}f(x_j)+\frac{1}{2}f(b)]
+$$
+
+\section{Formule du point du milieu}
+
+On approche l'aire par (avec $x_i=a+\frac{h(2i+1)}{2}$ pour $i=0,1,2,...,n$)
+$$
+M(h)=h[f(x_{0.5}+f(x_{1.5}+f(x_{2.5}+f(x_{3.5}]
+$$
+On a aussi
+$$
+T(\frac{h}{2})=\frac{1}{2}[T(h)+M(h)]
+$$
+Pour le calcule de $T(h)$, on prend les extrémités au départ (pour $n=4$) : $T(h)=\frac{h}{2}(f_0+f_4)$. Puis on prend le milieu pour $M(h)=hf_2$ puis $M(\frac{h}{2})=\frac{h}{2}[f_1+f_3]$...
+
+\section{Majorant de l'erreur (Trapèze)}
+Si la fonction à intégrer est deux fois continûment dérivable, alors on peut majorer l'erreur :
+$$
+\Big|\int_a^bf(x)dx-T(h)\Big|\leq \frac{h^2(b-a)}{12} \max_{a\leq x \leq b}|f''(x)|
+$$
+
+\subsection*{Exemple}
+On veut calculer avec la formule composite l'intégrale 
+$$\int_0^\pi\sin(x)dx=2$$
+avec une erreur limité par $0.00002$. Quel est la valeur de $n$ ?
+\begin{align*}
+& f(x)=\sin(x)\\
+& f''(x)=-\sin(x)\\
+& \text{Puisse que sin est bornée par 1 :}\\
+& \Big|\int_a^bf(x)dx-T(h)\Big| \leq \frac{h^2\pi}{12}\\
+& \text{On déduit que} \\
+& h \leq \Big(\frac{0.00002\cdot12}{\pi}^{\frac{1}{2}}\Big)=0.00874039
+\end{align*}
+La méthode du trapèze est optimale si :
+\begin{itemize}
+    \item La fonction est périodique
+    \item La fonction est infiniment dérivable
+    \item On intègre sur une période
+\end{itemize}
+
+\section{Méthode de simpson}
+Le polynôme d'interpolation $p_2(x)$ pour les 3 nœuds équirépartis $x_0=a,x_1=\frac{b+a}{2},x_2=b$ est donné par :
+\begin{align*}
+p_2(x)&=\frac{(x-x_1)(x-x_2)}{2h^2}f_0\\
+&+\frac{(x-x_1)(x-x_2)}{2h^2}f_1\\
+&+\frac{(x-x_0)(x-x_2)}{-h^2}f_1\\
+&+\frac{(x-x_0)(x-x_1)}{2h^2}f_2\\
+& \text{où } h=\frac{b-a}{2}
+\end{align*}
+
+On obtient l'approximation suivante :
+\begin{align*}
+\int_a^bf(x)dx \approx \int_a^bp_2(x)dx = \frac{b-a}{6}[f(a)+4f(\frac{a+b}{2})+f(b)]
+\end{align*}
+
+Cette méthode intègre les polynômes de degrés $2$ et $3$ exactement.
+
+\section{Majorant de l'erreur (Simpson)}
+Si la fonction est $4$ fois continûment dérivable :
+$$
+\Big|\int_a^bf(x)dx-S\Big| \leq \frac{(b-a)^5}{90}\max_{a\leq x\leq b}|f^{(4)}(x)|
+$$
+
+\section{Formule de Simpson composite}
+
+On applique Simpson sur des sous-intervalles, on prend $n=6$ :
+\begin{align*}
+S_c
+ &=\frac{2h}{6}(f_0+4f_1+f_2)+\frac{2h}{6}(f_2+4f_3+f_4)+\frac{2h}{6}(f_4+4f_5+f_6)\\
+ &=\frac{h}{3}[f_0+4f_1+2f_2+4f_3+2f_4+4f_5+f_6]\\
+ &=\frac{h}{3}[f_0+4f_1+f_6+2(f_2+f_3+f_4+2f_5)]
+\end{align*}
+
+et avec $2n$ sous-intervalles :
+$$
+S_c=\frac{h}{3}\Big(f(a)+4f(x_1)+f(b)+2\sum_{k=1}^{n-1}[f(x_{2k})+2f(x_{2k+1})]\Big)
+$$
+
+avec $h=\frac{b-a}{2}$.
+
+\section{Erreur de la formule composite de Simpson}
+Si la fonction est $4$ fois continûment dérivable :
+$$
+\Big|\int_a^bf(x)dx-S\Big| \leq \frac{h^4(b-a)}{180}\max_{a\leq x \leq b}|f^{(4)}(x)|
+$$
+
+\section{Formule de Newton-Cotes}
+On peut généraliser Simpson en utilisant un polynôme de degré $n$ passant par les points $(x_i,f(x_i))$ avec $(0\leq i\leq n)$ où $x_i=x_0+ih$. Les formules pour $n=3$ et $n=4$ :
+\begin{align*}
+\int_{x_0}^{x_3}f(x)dx&=\frac{3h}{8}[f(x_0)+3f(x_1)+\\
+&3f(x_2)+f(x_3)]-\frac{3h^5}{80}f^{(4)}(\epsilon)\\
+\int_{x_0}^{x_4}f(x)dx&=\frac{2h}{45}[7f(x_0)+32f(x_1)\\
+&+12f(x_2)+32f(x_3)+7f(x_4)]\\
+&-\frac{8h^7}{945}f^{(6)}(\epsilon)
+\end{align*}
+avec $x_0 \leq \epsilon \leq x_{3,4}$.
+
+La formule de Newton-Cotes associée à une valeur \textbf{paire} de $n$ intègre un polynôme de degré $n+1$ exactement. Ce n'est pas conseillé d'utiliser cette formule avec des polynômes de degré élevé.
+
+\section{Intégration de Romberg}
+$$
+\begin{array}{cccccc}
+T_{0,0} & & & & & \\
+T_{1,0} & T_{1,1} & & & & \\
+T_{2,0} & T_{2,1} & T_{2,2} & & & \\
+T_{3,0} & T_{3,1} & T_{3,2} & T_{3,3} & & \\
+T_{4,0} & T_{4,1} & T_{4,2} & T_{4,3} & T_{4,4} & \\
+T_{5,0} & T_{5,1} & T_{5,2} & T_{5,3} & T_{5,4} & T_{5,5} \\
+\end{array}
+$$
+avec
+$$
+T_{i,j}=\frac{4^jT_{i,j-1}-T_{i-1,j-1}}{4^j-1}
+$$
+\begin{align*}
+& T_{0,0}=\frac{1}{2}(a-b)(f(a)+f(b))\\
+& T_{n,0}=\textbf{T}(2^n)
+\end{align*}
+où $T(h)$ est la méthode du trapèze composite.
 
 \chapter{Banach TODO}
 
