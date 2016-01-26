@@ -246,7 +246,7 @@ On donne $n$ points $(x_i,y_i)$, on approche les deux inconnues $x(t),y(t)$ par 
 
 \paragraph*{Exemple :}
 
-TODO
+
 
 \section{Formule du Trapèze}
 Approximation d'une intégrale par l'aire du trapèze :
@@ -379,13 +379,681 @@ $$
 \end{align*}
 où $T(h)$ est la méthode du trapèze composite.
 
+\section{Méthode de la bissection}
+
+Si $f(x)$ est continue et si $f(a) \cdot f(b) < 0$ alors il existe un zéros pour cette fonction.
+
+\paragraph*{Exemple :} $f(x)=x^5+2x^4+6x^3+2x-3=0$, comme $f(1)\cdot f(2) = -4 \cdot 17 < 0$ on sait qu'il existe une solution $r$ dans l'intervalle $]1,2[$. On pose donc $a=1$ et $b=2$ et on calcule $x_0=\frac{a+b}{2}=1.5$. Puis on choisit entre les intervalles $[a,x_0]$ et $[x_0,b]$ lequel contient $r$ et on continue.
+
+\textbf{Ordre de convergence : 1}.
+
+\section{Regula falsi}
+
+Au lieu de prendre le milieu de l'intervalle $[x_0,x_1]$ on prend l'intersection de la sécante avec l'axe $Ox$. L'équation de la droite est $y=y_0+(x-x_0)\cdot\frac{y_1-y_0}{x_1-x_0}$. On calcule donc $x_2$ :
+$$
+x_2=x_0-y_0\frac{x_1-x_0}{y_1-y_0}=\frac{x_0y_1-x_1y_0}{y_1-y_0}
+$$
+Et on continue jusqu'à ce que $|y_i| < \epsilon$ avec $\epsilon$ choisit. On détermine l'intervalle de la même manière que pour la méthode de la bissection.
+
+\textbf{Ordre de convergence : 1}.
+
+\section{Méthode de la sécante}
+
+Idem que Regula falsi sauf que on choisit toujours l'intervalle $x_i$ et $x_{i-1}$ pour calculer $x_{i+1}$.
+
+\textbf{Ordre de convergence : 1.618}.
+$$
+x_{k+1}=x_k-y_k\frac{x_k-x_{k-1}}{y_k-y_{k-1}},\ k=1,2,3,...
+$$
+
+\section{Méthode de Newton}
+
+On considère $x_0$ comme une approximation de $r$ et on utilise la formule de Newton :
+$$
+x_{k+1}=x_k-\frac{f(x_k)}{f'(x_k)},\ k=0,1,2,3,...
+$$
+\textbf{Ordre de convergence : 2} si $f''(r)\neq 0$.
+
+\section{Théorème de Banach}
+
+Une équation est sous la forme du point fixe si $f(x)=x$. SOus certaine conditions la suite $x_{k+1}=f(x_k),\ k=0,1,2,...$ converge vers $r$.
+
+Si $f'(r)\neq 0$ \textbf{l'ordre de convergence vaut $1$}.
+
+Si $f'(r)=0 \cap f''(r)\neq 0$ \textbf{l'ordre de convergence vaut $2$}.
+
+\paragraph*{Théorème :} Soit $I\subset R$ un intervalle fermé où $I=R$. Soit $F:I\rightarrow I$ une fonction possédant la propriété
+$$
+|F(x_1)-F(x_2)| \leq L|x_1-x_2|,\ \forall x_1,x_2\in I
+$$
+
+où $0 < L < 1$ est une constante (\textbf{constante de Lipschitz}). Alors :
+\begin{enumerate}
+    \item L'équation $x=F(x)$ possède une solution unique $r$ dans $I$. On appelle $r$ un point fixe de la fonction $F(x)$.
+    \item Pour une valeur initiale quelconque $x_0\in I$ la suite
+    $$
+    x_{k+1}=F(x_k), \ k\in N_0
+    $$
+    converge vers le point fixe $r$.
+\end{enumerate}
+
+\paragraph*{Estimation à priori :} $|r-x_k|\leq \frac{L^k}{1-L}\cdot |x_1-x_0|, \ k=1,2,3,...$
+\paragraph*{Estimation à posteriori :} $|r-x_k| \leq \frac{L}{1-L}\cdot |x_k-x_{k-1}|, \ k=1,2,3,...$
+
+La constante de Lipschitz optimale sur l'intervalle $I$ est donnée par
+$$
+L:=\max_{x\in I}|F'(x)|
+$$
+
+\section{Méthode de Newton du point fixe}
+
+On considère l'équation $f(x)=0$ avec la solution $r$. L'itération de Newton est définis par
+$$
+x_{k+1}=x_k-\frac{f(x_k)}{f'(x_k)}
+$$
+On définit $F(x)=x-\frac{f(x)}{f'(x)}$ on a $F(r)=r-\frac{f(r)}{f'(r)}=r$ Newton est donc une méthode de point fixe.
+$$
+F'(x)=\frac{f''(x)f(x)}{f'(x)^2}
+$$
+La constante de proportionnalité est donnée par $\frac{1}{2}F''(r)=\frac{f''(r)}{2f'(r)}$.
+
+\section{Critères d'arrêt}
+\paragraph*{1 :} $|f(x_k)|<\epsilon$ si $r$ est un $0$ simple, on calcule l'erreur par $|e_k|\lesssim\frac{1}{|f'(r)|}|f'(x_k)|$. Donc si 
+\begin{itemize}
+    \item $|f'(r)| \backsimeq 1$, alors $e_k \backsimeq\epsilon$; le critère est satisfaisant
+    \item $|f'(r)| << 1$, on sous-estime l'erreur
+    \item $|f'(r)| >> 1$, on surestime l'erreur
+\end{itemize}
+
+\paragraph*{2 :} $|x_{k+1}-x_k| < \epsilon$, on appelle $|x_{k+1}-x_k|$ l'incrément. Si $x_k$ est proche de $r$, on a
+$$
+e_k \backsimeq \frac{1}{1-F'(r)}(x_{k+1}-x_k)
+$$
+ce n'est pas satisfaisant si $F'(r)$ est proche de $1$. C'est optimal pour les méthode d'ordre $2$ (Newton...). C'est également satisfaisant si $-1<F'(r) < 0$.
+
+\section{Système d'équation linéaire}
+
+On considère deux équations de deux variables dans la forme de point fixe
+\begin{align*}
+x=F(x,y)\\
+y=G(x,y)
+\end{align*}
+un point $(r,s)\in \mathbb{R}^2$ tel que
+\begin{align*}
+r = F(r,s)\\
+s = G(r,s)
+\end{align*}
+
+s'appelle un \textbf{point fixe} de l'application $F:R\rightarrow R^2$ définis par $$
+F(x)=\begin{pmatrix} F(x,y)\\G(x,y)\end{pmatrix},\ \ x=\begin{pmatrix} x\\y\end{pmatrix} \in \mathbb{R}^2
+$$
+
+\paragraph*{Exemple :} Mettre un système sous forme de point fixe :
+\begin{align*}
+x^2-10x+y^2+8&=0\\
+xy^2+x-10y+5&=0
+\end{align*}
+$\longrightarrow$
+\begin{align*}
+x &= \frac{1}{10}(x^2+y^2+8)=F(x,y)\\
+y &= \frac{1}{10}(xy^2+x+5)=G(x,y)
+\end{align*}
+
+\section{Théorème de Banach (2)}
+
+\begin{center}
+    \includegraphics[width=0.45\textwidth]{img/banach_2.png}
+    \includegraphics[width=0.45\textwidth]{img/banach_2_2.png}
+\end{center}
+
+
+\paragraph*{Exemple :}
+
+Considérons la fonction $F$ suivante :
+$$
+F(x)= \matdd{F(x,y)}{G(x,y)} = \matdd{\frac{1}{10}(x^2+y^2+6)}{\frac{1}{10}(xy^2+x+5)}, \ \text{avec } x=\matdd{x}{y}
+$$
+La matrice de Jacobi est donnée par :
+$$
+J(x,y)=\matd{F_x(x,y)}{F_y(x,y)}{G_x(x,y)}{G_y(x,y)} = \frac{1}{10}\matd{2x}{2y}{y^2+1}{2xy}
+$$
+La norme matricielle est donnée par
+$$
+||J(x,y)||=\frac{1}{10}\sqrt{4x^2+4y^2+(y^2+1)^2+4x^2y^2}
+$$
+Si $\max_{(x,y)\in D}||J(x,y)||<1$ alors $F$ est une contraction.
+
+Banach est un résultant théorique, en pratique c'est compliqué de trouvé un bon D.
+
+Le vecteur d'erreur est donné par
+$$
+e_k = x_k - r = (\begin{array}{c}
+x_k-r \\ 
+y_k-s
+\end{array} ) = (\begin{matrix}
+\varepsilon_k \\ 
+\delta_k
+\end{matrix})
+$$
+
+Si $\textbf{J}(r,s)$ est nulle : convergence quadratique, sinon linéaire.
+
+\section{Courbe de Bézier}
+\subsection{L'algorithme de De Casteljau}
+\subsubsection{Courbe de Bézier degré 2}
+\begin{align*}
+b_0^1(t) &= (1-t)b_0 + t\cdot b_1\\
+b_1^1(t) &= (1-t)b_1 + t\cdot b_2\\
+b_0^2(t) &= (1-t)b_0^1 + t\cdot b_1^1\\
+b_0^2(t) &= (1-t)^2b_0 + 2t(1-t)\cdot b_1 + t^2b_2\\
+\end{align*}
+\begin{center}
+\includegraphics[width=0.4\textwidth]{img/bezier_1.jpg}\\ 
+\end{center}
+$$
+b_0 = 
+\begin{bmatrix}1\\1\end{bmatrix},
+b_1 = 
+\begin{bmatrix}2\\2.5\end{bmatrix},
+b_2 = 
+\begin{bmatrix}4\\1.5\end{bmatrix}
+$$
+
+\begin{align*}
+& b_0^1(t) = (1-t)\begin{bmatrix}1\\1\end{bmatrix} + t\cdot \begin{bmatrix}2\\2.5\end{bmatrix}\\
+& b_1^1(t) = (1-t)\begin{bmatrix}2\\2.5\end{bmatrix} + t\cdot \begin{bmatrix}4\\1.5\end{bmatrix}\\
+& b_0^2(t) = (1-t)^2\begin{bmatrix}1\\1\end{bmatrix} + 2t(1-t)\cdot \begin{bmatrix}2\\2.5\end{bmatrix} + t^2\begin{bmatrix}4\\1.5\end{bmatrix}\\
+& b_0^2(t) = 
+\begin{bmatrix}
+1+2t+t^2\\
+1+3t+2.5t^2
+\end{bmatrix}
+\end{align*}
+
+\paragraph*{Représentations des vecteurs:}
+\begin{tabular}{lll}
+$b_0$ &         &         \\
+$b_1$ & $b_0^1$ &         \\
+$b_2$ & $b_1^1$ & $b_0^2$
+\end{tabular}
+\subsubsection{Courbe de Bézier degré 3}
+
+\includegraphics[width=0.4\textwidth]{img/bezier_2.jpg}
+
+\paragraph*{Représentations des vecteurs:}
+\begin{tabular}{llll}
+$b_0$ &         &         & \\
+$b_1$ & $b_0^1$ &         & \\
+$b_2$ & $b_1^1$ & $b_0^2$ & \\
+$b_3$ & $b_2^1$ & $b_1^2$ & $b_0^3$
+\end{tabular}
+\subsection{Polynôme de Bernstein}
+$$B_i^n(t) = \begin{pmatrix}n\\i\end{pmatrix}t^i(1-t)^{n-i},(i=0,1,\cdots,n) $$
+
+Facteur binonmiale:
+$$\begin{pmatrix}n\\i\end{pmatrix} = \frac{n!}{i!\cdot(n-i)!}$$
+
+\rotatebox{0}{
+\begin{tiny}
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+$n$ & $i=0$              & $i=1$                & $i=2$                & $i=3$          \\ \hline\hline
+0   & $B_0^0(t)=1$       &                      &                      &                \\ \hline
+1   & $B_0^1(t)=1-t$     & $B_1^1(t)=t$         &                      &                \\ \hline
+2   & $B_0^2(t)=(1-t)^2$ & $B_1^2(t)=2t(1-t)$   & $B_2^2(t)=t^2$       &                \\ \hline
+3   & $B_0^3(t)=(1-t)^3$ & $B_1^3(t)=3t(1-t)^2$ & $B_2^3(t)=3t^2(1-t)$ & $B_3^3(t)=t^3$ \\ \hline
+\end{tabular}
+\end{tiny}
+}
+\subsection{Relation entre les courbes de Bézier et les polynômes de Bernstein}
+$ b_0^1(t) = b_0B_0^1(t) + t\cdot b_1 $\\
+$ b_1^1(t) = b_1B_0^1(t) + t\cdot b_2 $\\
+$ b_0^2(t) = b_0B_0^2(t) + b_1B_1^2(t) + b_2B_2^2(t) $\\
+$b_i^r(t) = \sum_{j=0}^r b_{i+j}B_j^r(t), 1\leq r \leq r, 0 \leq i \leq n-r$\\
+Si $r=n$:\\$b_i^r(t) = \sum_{j=0}^n b_{j}B_j^n(t)$
+\paragraph*{Tangente aux extrémité} $x'(t) = n \sum_{j=0}^{n-1}(b_{j+1-}-b_j)B_j^{n-1}(t)$
+\subsection{Courbes de Bézier composées}
+TODO:
+\section{Méthode de Gauss}
+\paragraph*{Exemple : }
+$
+A \vec{x} = \vec{b} \Longleftrightarrow
+\begin{pmatrix}
+ 10 & -7 & 0       \\
+ -3 & 2.059 &   6     \\
+ 5 &  -1 &   5     
+\end{pmatrix}
+\begin{pmatrix}
+ x_1    \\
+ x_2    \\
+ x_3     
+\end{pmatrix}
+=
+\begin{pmatrix}
+ 7  \\
+ 3.901    \\
+ 6     
+\end{pmatrix}
+\\
+\Longleftrightarrow
+\begin{pmatrix}[ccc|c]
+ 10 & -7 & 0   & 7    \\
+ -3 & 2.059 &   6  & 3.901  \\
+ 5 &  -1 &   5 & 6  
+\end{pmatrix}
+$
+
+\begin{tabular}{ll}
+$l_{21} = \frac{a_{21}}{a_{11}} = - \frac{1}{3}$ & $l_{31} = \frac{a_{31}}{a_{11}} = - \frac{1}{2}$ \\
+$L_2 - l_{21} \cdot L_1$ & $L_3 - l_{31} \cdot L_1$
+\end{tabular}
+
+\begin{tabular}{ll}
+$
+\begin{pmatrix}[ccc|c]
+ 10 & -7 & 0   & 7    \\
+ 0 & \fbox{-0.001} &   6  & 6.001  \\
+ 0 &  \fbox{2.5} &   5 & 2.5  
+\end{pmatrix}
+$
+&
+$
+P=
+\begin{pmatrix}
+ 1 & 0 & 0       \\
+ 0 & 1 & 0     \\
+ 0 & 0 & 1     
+\end{pmatrix}
+$
+\end{tabular}
+
+Le pivot de la ligne 3 est plus grand que celui de la ligne 2, les deux lignes dovent être intervertis.
+
+\begin{tabular}{ll}
+$
+\begin{pmatrix}[ccc|c]
+ 10 & -7 & 0   & 7    \\
+ 0 &  \fbox{2.5} &   5 & 2.5  \\
+ 0 & \fbox{-0.001} &   6  & 6.001
+\end{pmatrix}
+$
+&
+$
+P=
+\begin{pmatrix}
+ 1 & 0 & 0       \\
+ 0 & 0 & 1     \\
+ 0 & 1 & 0     
+\end{pmatrix}
+$
+\end{tabular}
+
+\begin{tabular}{ll}
+$l_{32} = \frac{a_{32}}{a_{22}} = -0.0004$ & $L_3 - l_{32} \cdot L_2$ 
+\end{tabular}
+
+\begin{tabular}{ll}
+$
+\begin{pmatrix}[ccc|c]
+ 10 & -7 & 0   & 7    \\
+ 0 &  2.5 &   5 & 2.5  \\
+ 0 & 0 &   6.002  & 6.002
+\end{pmatrix}
+$
+&
+$
+U=
+\begin{pmatrix}
+ 10 & -7 & 0      \\
+ 0 &  2.5 &   5   \\
+ 0 & 0 &   6.002  
+\end{pmatrix}
+$
+\end{tabular}
+
+\begin{tabular}{ll}
+$
+L=
+\begin{pmatrix}
+ 1 & 0 & 0      \\
+ l_{21} & 1 & 0   \\
+ l_{31} & l_{32} & 1 
+\end{pmatrix}
+$
+&
+$
+L=
+\begin{pmatrix}
+ 1 & 0 & 0      \\
+ -0.3333 & 1 & 0   \\
+ 0.5 & -0.0004 & 1 
+\end{pmatrix}
+$
+\end{tabular}
+
+Résoudre $L\cdot \vec{y} = \vec{b}$ et $U \cdot \vec{x} = \vec{y}$.
+
+$
+\begin{pmatrix}
+ 10 & -7 & 0      \\
+ 0 &  2.5 &   5   \\
+ 0 & 0 &   6.002  
+\end{pmatrix}
+\cdot \vec{x} =
+\begin{pmatrix}
+7\\
+2.5\\
+6.002
+\end{pmatrix}
+$
+
+\section{Méthode A=QR}
+\paragraph*{Buts : } Transformer une matrice A (quelconque) en une matrice triangulaire supérieur $R$. Où la norme des colonnes est préservée.
+$
+A = \begin{pmatrix}
+\star & \star & \star & \star \\
+\star & \star & \star & \star \\
+\star & \star & \star & \star \\
+\star & \star & \star & \star
+\end{pmatrix}
+\rightarrow \cdots \rightarrow
+\begin{pmatrix}
+\star & \star & \star & \star \\
+0 & \star & \star & \star \\
+0 & 0 & \star & \star \\
+0 & 0 & 0 & \star
+\end{pmatrix}
+= R
+$
+\subsection{Matrice de Householder}
+$
+\rho = sign(x_1)||\vec{x}||_2, \quad \vec{v} = \vec{x} + \rho \vec{e_1},\quad \gamma = \frac{||\vec{v}||^2_2}{2} = \rho v_1
+$
+
+$
+\vec{e_1} = 
+\begin{pmatrix}
+1\\
+0\\
+0\\
+\vdots
+\end{pmatrix}
+$
+
+Normalement nous n'aurons pas besoin de calculer la matrice de Householder
+
+$
+H = \begin{cases}
+I, &\text{ si } v = 0 \\
+I - \frac{vv^T}{\gamma} &\text{ si }v \neq 0
+\end{cases}
+$
+
+\paragraph*{Exemple : } $x=(-2,2,1)^T$
+\begin{align*}
+&\rho = -\sqrt{(-2)^2 + (2)^2 + (1)^2} = -3 \\
+& v = (-2,2,1) + (-3,0,0) = (-5,2,1) \\
+& \gamma = \frac{(-5)^2+2^2+1^2}{2} = \frac{30}{2} = 15
+\end{align*}
+et on calcule $H$
+\begin{align*}
+H &= I - \frac{vv^T}{\gamma} = \frac{(-5,2,1) \cdot (-5,2,1)^T}{\gamma} \\
+& = I - 
+\frac{1}{15} \cdot \begin{pmatrix}
+25 & -10 & -5 \\
+-10 & 15 & 2 \\
+-5 & 2 & 1
+\end{pmatrix}\\
+&=
+\begin{pmatrix}
+-\frac{2}{3} & \frac{2}{3} & \frac{1}{3} \\
+\frac{2}{3} & \frac{11}{15} & -\frac{2}{15} \\
+\frac{1}{3} & -\frac{2}{15} & \frac{14}{15}
+\end{pmatrix}
+\end{align*}
+
+\paragraph*{Calcul de $H\vec{a}$ :}
+
+
+$\tau = \frac{\vec{v}^T \vec{a}}{\gamma}$
+
+$H\vec{a}=\vec{a}-\tau \vec{v}$
+
+\paragraph*{Exemple:}
+
+$a=(1,0,2)^T, \rho=-3, v=(-5,2,1)^T, \gamma = 15$ 
+
+$\tau = -\frac{18}{15}, Ha = (-2,\frac{12}{5},\frac{16}{5})^T$
+
+\paragraph*{Exemple de calcul de HA pour une matrice A}
+$$
+A = \begin{pmatrix}
+2 & 4 & 2 \\
+-1 & 0 & -4 \\
+2 & 2 & -1
+\end{pmatrix} = (\vec{a_1}|\vec{a_2}|\vec{a_3})
+$$
+
+\paragraph*{Exemple : } on reprend les algorithmes précédents et on calcule :
+$$
+\rho_1 = 3, v_1 = (5,-1,2)^T, \gamma_1 = 15
+$$
+puis on peut obtenir les éléments suivants :
+$$
+\tau_2 = \frac{v^T_1 a_2}{\gamma_1} = \frac{8}{5}, \quad 
+\tau_3 = \frac{v^T_1 a_3}{\gamma_1} = \frac{4}{5}
+$$
+et donc
+\begin{align*}
+& H\vec{a_2} = \vec{a_2} - \tau_2\vec{v_1} = (-4,\frac{8}{5},-\frac{6}{5})^T \\
+& H\vec{a_3} = \vec{a_3} - \tau_3\vec{v_1} = (-2,-\frac{16}{5},-\frac{13}{5})^T
+\end{align*}
+
+et obtient $HA$ :
+$$
+\begin{pmatrix}
+-3 & -4 & -2 \\
+0 & \frac{8}{5} & -\frac{16}{5} \\
+0 & -\frac{6}{5} & -\frac{13}{5}
+\end{pmatrix}
+$$
+
+\subsection{Méthode QR 1}
+\paragraph*{Exemple : }
+$$
+A = \begin{pmatrix}
+2 & 4 & 2 \\
+-1 & 0 & -4 \\
+2 & 2 & -1
+\end{pmatrix} = (\vec{a_1}|\vec{a_2}|\vec{a_3})
+$$
+
+On a $H_1A$ suivante :
+$$
+H_1A = \begin{pmatrix}
+-3 & -4 & -2 \\
+0 & \frac{8}{5} & -\frac{16}{5} \\
+0 & -\frac{6}{5} & -\frac{13}{5}
+\end{pmatrix}
+$$
+
+et on travail sur $B$ :
+$$
+B = \begin{pmatrix}
+\frac{8}{5} & -\frac{16}{5} \\
+-\frac{6}{5} & -\frac{13}{5}
+\end{pmatrix} = (\vec{b_2}|\vec{b_3})
+$$
+
+on cherche à obtenir $\overset{\sim}{H}_2B$ :
+\begin{align*}
+& \rho_2 = 2, \vec{v_2} = (\frac{18}{5},-\frac{6}{5})^T, \gamma_2=\frac{36}{5} \\
+& \tau_4 = \frac{\vec{v_2}^T\vec{b_3}}{\gamma} = -\frac{7}{6}\\
+& \overset{\sim}{H}_2\vec{b_3} = \vec{b_3} - \tau_4\vec{v_2} = (1,4)^T \\
+& H_2 = 
+\begin{pmatrix}[c|c]
+1 & 0 \\ \hline
+0 & \overset{\sim}{H}_2
+\end{pmatrix}
+\end{align*}
+
+et on obtient :
+$$
+\begin{pmatrix}
+-3 & -4 & -2 \\
+0 & -2 & 1 \\
+0 & 0 & -4
+\end{pmatrix}
+$$
+
+\subsection{Résolution de $\textbf{Ax=b}$}
+
+\paragraph*{si \textbf{A} est carré : } $A=QR$ et $Q^{-1}=Q^T$ donc $Ax=b \leftrightarrow QRx = b \leftrightarrow Rx = Q^Tb$
+\paragraph*{si \textbf{A} est rectangulaire : } $A=QR$ et $Q^{-1}=Q^T$, $A^TAx=A^Tb$ donc $A^TAx=A^Tb\leftrightarrow Rx = Q^Tb$
+
+Dans les deux cas, on ne construit pas $Q$. On applique l'algorithme de calcule de $HA$ pour une matrice $A$.
+
+\section{Résolutions d'équations différentielles}
+
+\subsection{Systèmes d'équations différentielles}
+$y^{(n)} = f(t,y,y',\cdots,y^{(n-1)})$\\
+$y_1=y,y_2=y',y_3=y'', \cdots y_n = y^{(n-1)}$\\
+$
+\begin{cases}
+	y'_1 = y_2,\\
+	y'_2 = y_3, \\
+	\vdots\\
+	y'_n=f(t,y_1,y_2,\cdots,y_n)
+\end{cases}
+$
+\subsection{Méthode analytique}
+\subsection{Méthode d'Euler}
+\begin{tabular}{ll}
+$
+\begin{cases}
+y_{n+1} = y_n + hf(t_n,y_n), \\
+t_{n+1} = t_n + h
+\end{cases}
+$
+&
+$n=0,1,2,\cdots$
+\end{tabular}
+\subsection{Erreur de troncature}
+\subsection{Méthode à deux étages}
+\subsubsection{Méthode du point milieu}
+$
+\begin{cases}
+s_1 = f(t_n,y_n),\\
+s_2 = f \left(t_n + \frac{h}{2}, y_n + \frac{1}{2}hs_1 \right),\\
+y_{n+1} = y_n + hs_2, \\
+t_{n+1} = t_n + h
+\end{cases}
+$
+\subsubsection{Méthode du trapèze}
+
+$
+\begin{cases}
+s_1 = f(t_n,y_n),\\
+s_2 = f \left(t_n + h, y_n + hs_1 \right),\\
+y_{n+1} = y_n + h\frac{s_1+s_2}{2}, \\
+t_{n+1} = t_n + h
+\end{cases}
+$\\
+Forme générale d'une méthode de Runge-Kutta:\\
+$
+\begin{cases}
+s_1 = f(t_n,y_n),\\
+s_2 = f \left(t_n + c_2h, y_n + a_{21}hs_1 \right),\\
+y_{n+1} = y_n + h(\omega_1s_1+\omega_2s_2), \\
+t_{n+1} = t_n + h
+\end{cases}
+$
+\begin{tabular}{l|ll}
+$0$   &            &            \\
+$c_2$ & $a_{21}$     &            \\ \hline
+      & $\omega_1$ & $\omega_2$
+\end{tabular}\\
+Pour la méthode du point milieu et du trapèze:\\
+\begin{tabular}{l|ll}
+$0$   &       &     \\
+$1/2$ & $1/2$ &     \\ \hline
+      & $0$   & $1$
+\end{tabular}
+\begin{tabular}{l|ll}
+$0$ &       &       \\
+$1$ & $1$   &       \\ \hline
+    & $1/2$ & $1/2$
+\end{tabular}\\
+En prenant $c_2$ comme paramètre libre:\\
+$\omega_1+\omega_2 = 1, \omega_2c_2=1/2,w_2a_{21}=1/2$
+\begin{tabular}{l|ll}
+$0$   &                    &                  \\
+$c_2$ & $a_21$             &                  \\ \hline
+      & $1-\frac{1}{2c_2}$ & $\frac{1}{2c_2}$
+\end{tabular}
+\subsection{Méthode à 3 étages}
+$
+\begin{cases}
+s_1 = f(t_n,y_n),\\
+s_2 = f \left(t_n + c_2h, y_n + a_{21}hs_1 \right),\\
+s_3 = f \left(t_n + c_3h, y_n + a_{31}hs_1 + a_{32}hs_2 \right),\\
+y_{n+1} = y_n + h(\omega_1s_1+\omega_2s_2 + \omega_3s_3), \\
+t_{n+1} = t_n + h
+\end{cases}
+$
+
+Tableau des paramètre:\\
+\begin{tabular}{l|lll}
+$0$   &            &            &            \\
+$c_2$ & $a_{21}$   &            &            \\
+$c_3$ & $a_{31}$   & $a_{32}$   &            \\ \hline
+      & $\omega_1$ & $\omega_2$ & $\omega_3$
+\end{tabular}
+
+Exemples de tableau de différentes méthodes:\\
+\begin{tabular}{l|lll}
+$0$   &       &       &       \\
+$1/2$ & $1/2$ &       &       \\
+$1$   & $-1$  & $2$   &       \\ \hline
+      & $1/6$ & $2/3$ & $1/6$
+\end{tabular}
+\begin{tabular}{l|lll}
+$0$   &       &       &       \\
+$1/2$ & $1/2$ &       &       \\
+$3/4$ & $0$   & $3/4$ &       \\ \hline
+      & $2/9$ & $3/9$ & $4/9$
+\end{tabular}\\
+\begin{tabular}{l|lll}
+$0$   &       &       &       \\
+$2/3$ & $2/3$ &       &       \\
+$2/3$ & $1/3$ & $1/3$ &       \\ \hline
+      & $1/4$ & $0$   & $3/4$
+\end{tabular}
+
+\subsection{Méthode de Runge-Kutta classique}
+$
+\begin{cases}
+	s_1 = f(t_n,y_n),\\
+	s_2 = f(t_n+1/2h,y_n+1/2hs_1),\\
+	s_3 = f(t_n + 1/2h,y_n+1/2hs_2), \\
+	s_4 = f(t_n + h,y_n+hs_3),\\
+	y_{n+1} = y_n + h(1/6s_1 + 1/3s_2 + 1/3s_3 + 1/6s_4),\\
+	t_{n+1} =t_n + h.
+\end{cases}
+$
+\subsection{Méthode de Runge-Kutta Fehlberg}
+$
+\begin{cases}
+	s_1 = f(t_n,y_n),\\
+	s_2 = f(t_n+1/2h,y_n+1/2hs_1),\\
+	s_3 = f(t_n + 3/4h,y_n+3/4hs_2), \\
+	y_{n+1} = y_n + h/9(2s_1 + 3s_2 + 4s_3),
+	s_4 = f(t_n + h,y_{n+1}),\\
+	e_{n+1}=\frac{h}{72}(-5s_1+6s_2+8s_3-9s_4),\\
+	t_{n+1} =t_n + h.
+\end{cases}
+$
+
 \end{multicols*}
-
 \end{document}
-
-
-
-
-
-
 
