@@ -119,7 +119,7 @@ left=10mm,right=10mm,top=10mm,bottom=15mm}
   \array{#1}}
 \makeatother
 
-\author{Sylvain Julmy}
+\author{Sylvain Julmy, Arnaud Sautaux }
 \title{Calcul formet et numérique en ingénierie : Résumé du cours}
 
 \begin{document}
@@ -238,6 +238,27 @@ y_1'' & y_2'' & y_3'' & y_4'' & 1 \\
   &   & 1 & 4 & \frac{6}{h^2}(y_5-2y_4+y_3)-y''_5 \\ \hline
 \end{array}
 $$
+
+\textbf{Si les nœuds ne sont pas équidistants:}
+
+\begin{tabular}{|llll|l|}
+$y_1''$      & $y_2''$      & $y_3''$      & $y_4''$      & $1$ \\ \hline
+$2(h_0+h_1)$ & $h_1$        &              &              & [1]\\
+$h_1$        & $2(h_1+h_2)$ & $h_2$        &              & [2]\\
+             & $h_2$        & $2(h_2+h_3)$ & $h_3$        & [3]\\
+             &              & $h_3$        & $2(h_3+h_4)$ & [4]
+\end{tabular}
+
+\textbf{Si les nœuds sont équidistants:}
+
+\begin{tabular}{|llll|l|}
+$y_1''$      & $y_2''$      & $y_3''$      & $y_4''$      & $1$ \\ \hline
+$4$          & $1$          &              &              & $\frac{6}{h_1}(y_2-y_1)-\frac{6}{h_0}(y_1-y_0)-h_0y_0''$  [1]\\
+$1$          & $4$          & $1$          &              & $\frac{6}{h_2}(y_3-y_2)-\frac{6}{h_1}(y_2-y_1)$  [2]\\
+             & $1$          & $4$          & $1$          & $\frac{6}{h_3}(y_4-y_3)-\frac{6}{h_2}(y_3-y_2)$  [3]\\
+             &              & $1$          & $4$          & $\frac{6}{h_4}(y_5-y_4)-\frac{6}{h_3}(y_4-y_3)-h_4y_5''$  [4]
+\end{tabular}
+
 
 \section{Paramétrisation d'une courbe}
 On a $f:[a,b] \rightarrow \mathbb{R}^2$ et $t \rightarrow (x(t),y(t))$ avec $x(t)$ et $y(t)$ des fonctions. Par exemple, le cercle unitaire possède comme paramétrisation $f:[0,2\pi[ \rightarrow \mathbb{R}$ et $t\rightarrow (\cos(t),\sin(t))$.
@@ -928,6 +949,10 @@ $
 $
 \subsection{Méthode analytique}
 \subsection{Méthode d'Euler}
+$t_0=0$, $t_1=t_0+h$,...
+
+$y'=\frac{dy}{dt}$
+
 \begin{tabular}{ll}
 $
 \begin{cases}
