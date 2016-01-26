@@ -124,6 +124,8 @@ left=10mm,right=10mm,top=10mm,bottom=15mm}
 
 \begin{document}
 
+\maketitle
+
 \begin{multicols*}{2}
 
 \section{Interpolation et splines}
@@ -289,7 +291,9 @@ On approche l'aire par (avec $x_i=a+\frac{h(2i+1)}{2}$ pour $i=0,1,2,...,n$)
 $$
 M(h)=h[f(x_{0.5}+f(x_{1.5}+f(x_{2.5}+f(x_{3.5}]
 $$
-On a aussi
+
+\section{Formule du trapèze composite}
+
 $$
 T(\frac{h}{2})=\frac{1}{2}[T(h)+M(h)]
 $$
