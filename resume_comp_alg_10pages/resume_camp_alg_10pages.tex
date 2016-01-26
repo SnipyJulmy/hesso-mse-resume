@@ -297,12 +297,12 @@ $h=b-a$ pour le départ.
 $$
 T(\frac{h}{2})=\frac{1}{2}[T(h)+M(h)]
 $$
-Pour le calcule de $T(h)$, on prend les extrémités au départ (pour $n=4$) : $T(h)=\frac{h}{2}f(a+b)$. Puis on prend le milieu pour $M(h)=hf(\frac{b-a}{2})$ puis $M(\frac{h}{2})=\frac{h}{2}[f_1+f_3]$...
+Pour le calcule de $T(h)$, on prend les extrémités au départ (pour $n=4$) : $T(h)=\frac{h}{2}(f(a)+f(b))$. Puis on prend le milieu pour $M(h)=hf(\frac{b-a}{2})$ puis $M(\frac{h}{2})=\frac{h}{2}[f_1+f_3]$...
 
 \paragraph*{Marche à suivre :}
 \begin{itemize}
     \item On démarre avec $h=b-a$
-    \item On calcule $T(h)=\frac{h}{2}f(a+ b)$
+    \item On calcule $T(h)=\frac{h}{2}(f(a)+f(b))$
     \item On calcule $M(h)=hf(\frac{b-a}{2})$
     \item On calcule $T(\frac{h}{2})=\frac{1}{2}[T(h)+M(h)]$
     \item Pour le calcule de $M(\frac{h}{2})$ on prend les points des milieux de chaque sous-intervalles et $M(h/2)=h\cdot[\text{somme des évaluations de f avec les millieux}]$
