@@ -1,0 +1,160 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{minted}
+\usepackage{parskip}
+\usepackage{fullpage}
+\usepackage{amsthm}
+
+\author{Sylvain Julmy}
+\title{PCM - Résumé}
+
+\begin{document}
+\chapter{Introduction} % (fold)
+\label{cha:Introduction}
+
+Pourquoi faire du multicoeurs :
+\begin{itemize}
+    \item Limite thermique
+    \item Limite des accès mémoires
+    \item Limite de l'intégration (mettre $\approx 10^{12}$ mots sur une surface de $0.3^2mm^2$)
+\end{itemize}
+
+La solution est le CMP, une architecture MIMD (Multiple Instruction Stream, Multiple Data stream),
+il s'agit d'un ensemble de thread qui exécute un graphe de précédence.
+
+\section{Loi d'Amdhal} % (fold)
+\label{sec:Loi d'Amdhal}
+Le gain de vitesse (speed-up) pour une architecture à $n$ coeurs est donné par
+$S(n)=\frac{T_1}{T_n}$ où $T_n$ est le temps pour exécuter le problème avec $n$ coeurs. Idéalement,
+il faudrait avoir $S(n)=n$ : aller $n$ fois plus vite. Mais c'est rarement le cas !
+
+Tout programme contient une partie séquentielle $seq$ et une partie $par$ pouvant être exécutée en
+parallèle. Soit $p$ la partie séquentielle du problème : $p=\frac{seq}{seq+par}$.
+$$
+S(n) = \frac{T_1}{T_1p+\frac{(1-p)T_1}{n}} = \frac{1}{p+\frac{1-p}{n}}
+$$
+
+\paragraph*{Exemple : } $60\%$ concurrent et $40\%$ séquentielle : $S(10) =
+\frac{1}{0.4+\frac{0.6}{10}} = 2.17$, $S(10) = \frac{1}{0.99+\frac{0.01}{10}} = 9.17$.
+
+Conclusion : le petit $\%$ séquentielle influence fortement le gain en vitesse fourni par un CMP.
+% section Loi d'Amdhal (end)
+
+\section{Efficacité} % (fold)
+\label{sec:Efficacité}
+
+L'efficacité $E(n)$ est l'utilisation moyenne des $n$ coeurs pour exécuter l'application :
+$E(n)=\frac{S(n)}{n}$. $E(n) = 1$ implique que $S(n) = n$. Généralement une augmentation de $S(n)$
+(en donnant des coeurs à l'application) se réalise au détriment de l'efficacité.
+% section Efficacité (end)
+
+\section{Caractérisation du parallélisme} % (fold)
+\label{sec:Caractérisation du parallélisme}
+
+\begin{itemize}
+    \item $p$ : fraction séquentiel de l'application
+    \item $m_{min}$
+    \item $m_{max}$
+    \item $p_i$ proportion de l'exécution avec $i$ coeurs
+    \item $A$ : paralélisme moyen de l'application 
+\end{itemize}
+
+$$A = \sum^{m_{max}}_{i=m_{min}}i p_i$$
+
+$A$ peut se définir comme étant
+\begin{itemize}
+    \item égal au nombre moyen de coeurs utilisés durant l'exécution de l'application si $n \geq
+        m_{max}$.
+    \item égal au gain de vitesse $S(\infty)=\frac{T_1}{T_{\infty}}=\frac{A
+        T{_\infty}}{T_{\infty}}$.
+    \item le rapport entre la somme du temps d'exécution de toutes les actions du graphe de
+        précédence de l'application et le chemin le plus long de la racine aux feuilles de ce
+        graphe.
+\end{itemize}
+% section Caractérisation du parallélisme (end)
+
+\section{Relation entre $S(n)$ et $A$} % (fold)
+\label{sec:Relation entre $S(n)$ et $A$}
+
+Soit $A$ le parallélisme moyen d'une application, $S(n)$ son gain de vitesse pour
+$n$ coeurs et $E(n)$ l'efficacité des $n$ coeurs. Alors $S(n) \geq \frac{nA}{n+A-1}$ et $E(n) \geq
+\frac{A}{n+A-1}$.
+
+% section Relation entre $S(n)$ et $A$ (end)
+
+La programmation concurrente multicoeurs est difficile :
+\begin{itemize}
+    \item Limitation de la loi d'Amdhal.
+    \item Idéalement il faut maintenir une efficacité élevée.
+    \item Le dimensionnement de la granularité de calcul est difficile (granularité = exécution fait
+        entre 2 points de synchronisation).
+    \item la localité des données freine la vitesse (conserver le maximum de données en
+        antémémoire).
+    \item le balancement de la charge de chaque thread n'est pas évident.
+    \item le partage de données et la synchronisation entre les threads doivent être rapide.
+\end{itemize}
+% chapter Introduction (end)
+
+\chapter{Exclusion mutuelle} % (fold)
+\label{cha:Exclusion mutuelle}
+Un thread est une suite ordonnée d'événemments.
+
+\section{Algorithme de Peterson} % (fold)
+\label{sec:Algorithme de Peterson}
+
+% section Algorithme de Peterson (end)
+
+\section{Algorithme de la boulangerie} % (fold)
+\label{sec:Algorithme de la boulangerie}
+
+% section Algorithme de la boulangerie (end)
+
+\section{Verrou TAS} % (fold)
+\label{sec:Verrou TAS}
+
+% section Verrou TAS (end)
+
+\section{Verrou TATAS} % (fold)
+\label{sec:Verrou TATAS}
+
+% section Verrou TATAS (end)
+
+\section{Verrou TATAS avec attente} % (fold)
+\label{sec:Verrou TATAS avec attente}
+
+% section Verrou TATAS avec attente (end)
+
+\section{Verrou ticket à attente proportionnelle} % (fold)
+\label{sec:Verrou ticket à attente proportionnelle}
+
+% section Verrou ticket à attente proportionnelle (end)
+
+\section{Verrou Anderson} % (fold)
+\label{sec:Verrou Anderson}
+
+% section Verrou Anderson (end)
+
+\section{Verrou Graunke et Thakkar} % (fold)
+\label{sec:Verrou Graunke et Thakkar}
+
+% section Verrou Graunke et Thakkar(end)
+
+\section{Verrou MCS} % (fold)
+\label{sec:Verrou MCS}
+
+% section Verrou MCS (end)
+
+\section{Verrou CLH} % (fold)
+\label{sec:Verrou CLH}
+
+% section Verrou CLH (end)
+
+% chapter Exclusion mutuelle (end)
+
+\end{document}
