@@ -1,0 +1,497 @@
+\documentclass[11pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{minted}
+\usepackage{parskip}
+\usepackage{fullpage}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{tikz}
+
+\author{Sylvain Julmy}
+\title{ProgAlg - Résumé}
+
+\begin{document}
+
+\maketitle
+
+\chapter{Introduction} % (fold)
+\label{cha:Introduction}
+
+\paragraph*{Concurrent computing :} A form of computing in which programs are designed as a collections of interaction computational processes that may be executed in parallel.
+
+\paragraph*{Parallel computing :} A form of computing in which many calculations are carried out simultaneously, operating on the principle that large problems can be divided into smaller ones. The most popular form is the multi-core processors.
+
+\paragraph*{Distributed computing :} Any computing that involves multiple computers remote from each other that each have a role in a computation problem or information processing. Motivation : High performance (HPC) to avoid processing issue (compute faster) and memory issue (compute larger problems).
+
+There is different forms of parallel computing :
+\begin{itemize}
+    \item Bit-level
+    \item Instruction level
+    \item Data parallelism
+    \item Task parallelism
+\end{itemize}
+
+There is $3$ ways to ger performance :
+\begin{itemize}
+    \item More powerful processing unit (CPU)
+    \item Better algorithms
+    \item Parallelize / distribute
+\end{itemize}
+
+$N$ computers performing the task $T$ would compute the task faster than with $1$ computer but never $N$ times faster.
+
+\paragraph*{Flops :}  number of floating point operation over time. $1 Flops = 1$ floating point operation in $1$ second.
+
+\paragraph*{ MIPS :} million of instructions per second. $1 MIPS = 1 \text{ million of instructions in one second}$
+
+\paragraph*{Peak performance :} the maximum computing performance of a computer.
+
+\paragraph*{Sustained performance :} the observed performance on a benchmark program (usually LINPACK).
+
+Due to the rapid increasing of the numbers of connected processors it rapidly appeared that purely "shared memory" supercomputer is not an option (memory bottleneck).
+
+\begin{itemize}
+    \item Processing unit : Smallest sequential processing element, a core.
+    \item SMP : Single Memory Multi Processor, shared memory multi processing unit like a multicore.
+    \item Node : Component which are connected through the network in a distributed memory multiprocessors computers.
+\end{itemize}
+
+There is two option for getting the power on distributed computers :
+\begin{itemize}
+    \item Many low power nodes : Massively Parallel Processor (MPP) $\rightarrow$ "army of ants".
+    \item Few high power nodes : connecting SMP nodes $\rightarrow$ "herd of elephants".
+\end{itemize}
+
+% chapter Introduction (end)
+
+\chapter{Architecture} % (fold)
+\label{cha:Architecture}
+
+\section{Parallel architecture} % (fold)
+\label{sec:Parallel architecture}
+
+Two main class :
+\begin{itemize}
+    \item Shared memory : several processors sharing through a bus or a dynamic network the same set of memory bank.
+    \item Distributed memory : several processors, having each its own local memory, communicate through a static or dynamic network.
+\end{itemize}
+
+% section Parallel architecture (end)
+
+\section{Shared-address-space plaforms} % (fold)
+\label{sec:Shared-address-space plaforms}
+
+\begin{itemize}
+    \item UMA : Uniform Memory Access $\rightarrow$ shared-address-space computer with local caches and global memories. All memory access times (except cache) are identical.
+    \item NUMA : Non Uniform Memory Access $\rightarrow$ shared-address-space computer with local memory only. Local memory access times are shorter.
+\end{itemize}
+
+% section Shared-address-space plaforms (end)
+
+\section{Implicit and Explicit parallelism} % (fold)
+\label{sec:Implicit and Explicit parallelism}
+
+\paragraph*{Implicit parallelism :}
+
+\begin{itemize}
+    \item Higher level of device integration have made available a large number of transistors.
+    \item Current processors use these resources in multiple functional units and execute multiple instructions in the same cycle.
+    \item The precise manner in which these instructions are selected and executed provides impressive diversity in architectures.
+\end{itemize}
+
+\paragraph*{Explicit parallelism : }
+
+\begin{itemize}
+    \item An explicit parallel program must specify concurrency and interaction between concurrent subtasks.
+\end{itemize}
+
+\begin{tabular}{cc}
+    SISD & MISD \\
+    SIMD & MIMD
+\end{tabular}
+
+% section Implicit and Explicit parallelism (end)
+
+\section{Parallel vs. Distributed computation} % (fold)
+\label{sec:Parallel vs. Distributed computation}
+
+Parallel processing refers to multiple CPUs within the same shared-memory machine performing computation.
+
+Distributed computation involves multiple computers with their own memory communicating over a network.
+
+% section Parallel vs. Distributed computation (end)
+
+\section{Interconnection network} % (fold)
+\label{sec:Interconnection network}
+
+\paragraph*{static :} network consist of point-to-point communication links among processing nodes.
+
+\paragraph*{dynamic :} networks are build using switches and communication links.
+
+% section Interconnection network (end)
+
+\section{Structural approach} % (fold)
+\label{sec:Structural approach}
+
+Based on the four main components of a computer :
+\begin{itemize}
+    \item The control unit
+    \item The computing unit
+    \item The program memory
+    \item The data memory
+\end{itemize}
+
+\subsection{Sequential computer} % (fold)
+\label{sub:Sequential computer}
+
+There is only one of each component : One program using one set of data. At each time step only one instruction of the program is executed by the unique processing unit.
+
+% subsection Sequential computer (end)
+
+\subsection{Vectorial computer} % (fold)
+\label{sub:Vectorial computer}
+
+There is one control unit, one program memory, multiple data memories and multiple computing units : One program executes several times the sames instruction on several data (vector) in a synchronous way (one control unit).
+
+% subsection Vectorial computer (end)
+
+\subsection{Parallel computer} % (fold)
+\label{sub:Parallel computer}
+
+One data memory, several program memories, several computing units, several control units and several different programs execute asynchronousy on the same data set. All programs share the same memory.
+
+% subsection Parallel computer (end)
+
+\subsection{Distributed computer} % (fold)
+\label{sub:Distributed computer}
+
+All component are duplicated, a network is added to communicate between the different processor. Several programs execute asynchronousy on different data set : Each program has its own memory and the communications between the programs are done through the network.
+
+% subsection Distributed computer (end)
+
+% section Structural approach (end)
+
+\section{Network topology} % (fold)
+\label{sec:Network topology}
+
+\subsection{Bus} % (fold)
+\label{sec:Bus}
+
+\begin{itemize}
+    \item Some of the simplest and earliest parallel machines used buses.
+    \item All processors access a common bus for exchanging data.
+    \item The distance between any two nodes is $O(1)$ in a bus.
+    \item The bus provides a convenient broadcasr media.
+    \item The bandwidth of the shared bus is a major bottleneck. 
+    \item Typical bus based machines are limited to dozens of nodes. 
+\end{itemize}
+
+% subsection Bus (end)
+
+\subsection{Crossbars} % (fold)
+\label{sec:Crossbars}
+
+It's like a matrix of connexion between the node, it use a $p\times m$  grid of switches to connect $p$ inputs to $m$ outputs in a non-blocking manner. The cost of a crossbar of $p$ processors grows as $O(p^2)$, so it's difficult to scale for large values of $p$.
+
+% subsection Crossbars (end)
+
+\subsection{Multistage Networks} % (fold)
+\label{sec:Multistage Networks}
+
+\begin{itemize}
+    \item Buses have excellent cost scalability, but poor performance scalability.
+    \item Crossbars gave excellent performance scalability but poor cost scalability.
+    \item Multistage interconnects strike a compromise between these extremes.
+    \item It consists of $\log p$ stages, where $p$ is hte number of inputs/outputs.
+    \item At each stage, input $i$ is connected to output $j$ if :
+        $$
+        j = 
+        \begin{dcases*} 
+            2i & $0 \leq i \leq \frac{p}{2}-1$ \\
+            2i + 1 - p & $\frac{p}{2} \leq i \leq p - 1$
+        \end{dcases*}
+        $$
+\end{itemize}
+
+% subsection Multistage Networks (end)
+
+\subsection{Multistage Omega Network} % (fold)
+\label{sub:Multistage Omega Network}
+
+The perfect shuffle patterns are connected using $2\times2$ switches, there is two modes : cross-over or pass-through.
+
+\begin{center}
+\begin{tikzpicture}
+    \draw (0,0) -- (2,0) -- (2,3) -- (0,3) -- (0,0);
+    \draw (-0.5,0.75) -- (2.5,0.75);
+    \draw (-0.5,2.25) -- (2.5,2.25);
+    \draw (4,0) -- (6,0) -- (6,3) -- (4,3) -- (4,0);
+    \draw (3.5,0.75) -- (4.5,0.75) -- (5.5,2.25) -- (6.5,2.25);
+    \draw (3.5,2.25) -- (4.5,2.25) -- (5.5,0.75) -- (6.5,0.75);
+\end{tikzpicture}
+\end{center}
+
+% subsection Multistage Omega Network (end)
+
+\subsection{Stars} % (fold)
+\label{sub:Stars}
+
+Every node is connected only to a common node at the center, the distance between any pair of nodes is $O(1)$. The bottleneck is the central node.
+
+\begin{center}
+\begin{tikzpicture}
+    \node[circle,draw,minimum size=0.7cm] (A) at (0,0) {};
+    \node[circle,draw,minimum size=0.7cm] (B) at (3,0) {};
+    \node[circle,draw,minimum size=0.7cm] (C) at (-3,0) {};
+    \node[circle,draw,minimum size=0.7cm] (D) at (0,3) {};
+    \node[circle,draw,minimum size=0.7cm] (E) at (0,-3) {};
+    \node[circle,draw,minimum size=0.7cm] (F) at (2.3,2.3) {};
+    \node[circle,draw,minimum size=0.7cm] (G) at (-2.3,2.3) {};
+    \node[circle,draw,minimum size=0.7cm] (H) at (2.3,-2.3) {};
+    \node[circle,draw,minimum size=0.7cm] (I) at (-2.3,-2.3) {};
+    \draw (A) -- (B);
+    \draw (A) -- (C);
+    \draw (A) -- (D);
+    \draw (A) -- (E);
+    \draw (A) -- (F);
+    \draw (A) -- (G);
+    \draw (A) -- (H);
+    \draw (A) -- (I);
+\end{tikzpicture}
+\end{center}
+
+% subsection Stars (end)
+
+\subsection{Linear arrays, Meshes and Torus} % (fold)
+\label{sub:Linear arrays, Meshes and Torus}
+
+\begin{itemize}
+    \item In a linear array, each node has two neighbors, one to its left and one to its right.
+    \item If the nodes at either end are connected, we refer to it as $1-D$ torus or a ring.
+    \item A generalization to $2d$ has nodes with $4$ neighbors : north, south, east, west.
+    \item A further generalization to $d$ dimensions has nodes with $2d$ neighbors.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}
+    \node[circle,draw,minimum size=0.7cm] (AA) at (0,2) {A};
+    \node[circle,draw,minimum size=0.7cm] (AB) at (1,2) {B};
+    \node[circle,draw,minimum size=0.7cm] (AC) at (2,2) {C};
+    \node[circle,draw,minimum size=0.7cm] (BA) at (0,1) {D};
+    \node[circle,draw,minimum size=0.7cm] (BB) at (1,1) {E};
+    \node[circle,draw,minimum size=0.7cm] (BC) at (2,1) {F};
+    \node[circle,draw,minimum size=0.7cm] (CA) at (0,0) {G};
+    \node[circle,draw,minimum size=0.7cm] (CB) at (1,0) {H};
+    \node[circle,draw,minimum size=0.7cm] (CC) at (2,0) {I};
+    \draw (AA) -- (AB); 
+    \draw (AB) -- (AC);
+    \draw (AA) -- (BA);
+    \draw (AB) -- (BB);
+    \draw (AC) -- (BC);
+    \draw (BA) -- (CA);
+    \draw (BB) -- (CB);
+    \draw (BC) -- (CC);
+    \draw (BA) -- (BB);
+    \draw (BB) -- (BC);
+    \draw (CA) -- (CB);
+    \draw (CB) -- (CC);
+\end{tikzpicture}
+\end{center}
+
+% subsection Linear arrays, Meshes and Torus (end)
+
+\subsection{Hypercubes} % (fold)
+\label{sub:Hypercubes}
+
+\begin{itemize}
+    \item A special case of a $d$-dimensional mesh is a hypercube.
+    \item $d=\log p$, where $p$ is the total number of nodes.
+    \item the distance between any two nodes is a most $\log p$.
+    \item each node has $\log p$ neighbors.
+    \item The distance between two nodes is given by the number of bit positions at which the two nodes differ.
+\end{itemize}
+
+\begin{center}
+\begin{tikzpicture}
+    \node[circle,draw,minimum size=0.7cm] (A1) at (0.6,0.6) {};
+    \node[circle,draw,minimum size=0.7cm] (B1) at (2.6,0.6) {};
+    \node[circle,draw,minimum size=0.7cm] (C1) at (2.6,2.6) {};
+    \node[circle,draw,minimum size=0.7cm] (D1) at (0.6,2.6) {};
+    \node[circle,draw,minimum size=0.7cm] (A) at (0,0) {};
+    \node[circle,draw,minimum size=0.7cm] (B) at (2,0) {};
+    \node[circle,draw,minimum size=0.7cm] (C) at (2,2) {};
+    \node[circle,draw,minimum size=0.7cm] (D) at (0,2) {};
+    \draw (A) -- (B);
+    \draw (B) -- (C);
+    \draw (C) -- (D);
+    \draw (D) -- (A);
+    \draw (A1) -- (B1);
+    \draw (B1) -- (C1);
+    \draw (C1) -- (D1);
+    \draw (D1) -- (A1);
+    \draw (A1) -- (A);
+    \draw (B1) -- (B);
+    \draw (C1) -- (C);
+    \draw (D1) -- (D);
+
+    \node[circle,draw,minimum size=0.7cm] (A12) at (5.6,0.6) {};
+    \node[circle,draw,minimum size=0.7cm] (B12) at (7.6,0.6) {};
+    \node[circle,draw,minimum size=0.7cm] (C12) at (7.6,2.6) {};
+    \node[circle,draw,minimum size=0.7cm] (D12) at (5.6,2.6) {};
+    \node[circle,draw,minimum size=0.7cm] (A2) at (5,0) {};
+    \node[circle,draw,minimum size=0.7cm] (B2) at (7,0) {};
+    \node[circle,draw,minimum size=0.7cm] (C2) at (7,2) {};
+    \node[circle,draw,minimum size=0.7cm] (D2) at (5,2) {};
+    \draw (A2) -- (B2);
+    \draw (B2) -- (C2);
+    \draw (C2) -- (D2);
+    \draw (D2) -- (A2);
+    \draw (A12) -- (B12);
+    \draw (B12) -- (C12);
+    \draw (C12) -- (D12);
+    \draw (D12) -- (A12);
+    \draw (A12) -- (A2);
+    \draw (B12) -- (B2);
+    \draw (C12) -- (C2);
+    \draw (D12) -- (D2);
+
+    \draw (A2) .. controls +(down:1cm) and +(down:1cm) ..  (A);
+    \draw (A12) .. controls +(up:1cm) and +(up:1cm) ..  (A1);
+
+    \draw (B2) .. controls +(down:1cm) and +(down:1cm) ..  (B);
+    \draw (B12) .. controls +(up:1cm) and +(up:1cm) ..  (B1);
+
+    \draw (C2) .. controls +(down:1cm) and +(down:1cm) ..  (C);
+    \draw (C12) .. controls +(up:1cm) and +(up:1cm) ..  (C1);
+
+    \draw (D2) .. controls +(down:1cm) and +(down:1cm) ..  (D);
+    \draw (D12) .. controls +(up:1cm) and +(up:1cm) ..  (D1);
+
+\end{tikzpicture}
+\end{center}
+
+% subsection Hypercubes (end)
+
+\subsection{K-ring} % (fold)
+\label{sub:K-ring}
+
+Intuitively, the K-ring topology is a graph built using $K$ rings where each ring goes over all the nodes in a diffenret order. The value $K$ is called the dimension. More formally, the definition of the $K$-ring topology is the following :
+\begin{itemize}
+    \item The size $N$ is an integer $>0$.
+    \item The dimension $K$ is an integer $>0$.
+    \item $K$ different positive integers $(a_1,...,a_K)$, prime with $N$ and smaller than $\frac{N+1}{2}$.
+    \item The nodes are numbered from $0$ to $N-1$.
+    \item Each node $i$ is connected to the nodes $i+aj \mod N, j \in \{1,...,K\}$
+\end{itemize}
+
+\paragraph*{Conventions} :
+\begin{itemize}
+    \item With such a construction each $a_j$ defins a ring on the $N$ nodes, this ring will be identified as the $ring_j$ and $a_j$ will be called the $step_j$.
+    aitem By renumbering the nodes it is always possible, for any $K$-rings to obtain a $ring_j$ with a $step_j$ equal to $1$. By convention, we decide that this ring is numbered by $1$. Consequently we will only consider $K$-rings with $a_1=1$.
+\end{itemize}
+
+% subsection K-ring (end)
+
+% section Network topology (end)
+
+\section{Evaluating interconnection netwroks} % (fold)
+\label{sec:Evaluating interconnection netwroks}
+
+\begin{itemize}
+    \item Diameter : distance between the farthest two nodes in the network.
+    \item Bisection width : minimum number of wires you must cut to divide the network into two equal parts.
+    \item Cost
+        \begin{itemize}
+            \item number of links or switches is a meaningful measures of the cost.
+            \item a number of others factors, such as the ability to layout the network, the length of wires,...
+        \end{itemize}
+    \item Scalability
+        \begin{itemize}
+            \item the ability to evolve.
+            \item the ability to be realized for any number of nodes.
+        \end{itemize}
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|ccccc|}
+    \hline
+    Network & Diameter & Bisection & Degree & Cost \\\hline
+    Completel-connected & $1$ & $\frac{p^2}{4}$ & $p-1$ & $\frac{p(p-1)}{2}$ \\
+    Star & $2$ & $1$ & $1$ & $p-1$ \\
+    Binary Tree & $2\log(\frac{p+1}{2})$ & $1$ & $1$ & $p-1$ \\
+    2-D Mesh & $p-1$ & $1$ & $1$ & $p-1$ \\ 
+    2-D Torus & $2\sqrt{p}-1$ & $\sqrt{p}$ & $2$ & $2(p-\sqrt{p})$ \\
+    Hypercube & $\log p$ & $\frac{p}{2}$ & $\log p$ & $\frac{(p \log p)}{2}$ \\
+    K-D Torus & $d\lfloor\frac{k}{2}\rfloor$ & $2k^{d-1}$ & $2d$ & $dp$ \\
+    Crossbar & $1$ & $p$ & $1$ & $p^2$ \\
+    Omega Network & $\log p$ & $\frac{p}{2}$ & $2$ & $\frac{p}{2}$ \\
+    Dynamic Tree & $2\log p$ & $1$ & $2$ & $p-1$ \\
+    \hline
+\end{tabular}
+\end{table}
+
+% section Evaluating interconnection netwroks (end)
+
+\section{Communication cost} % (fold)
+\label{sec:Communication cost}
+
+Overhead in parallel programs comes from :
+\begin{itemize}
+    \item idling
+    \item contention
+    \item communication
+\end{itemize}
+
+Communication cost depends on :
+\begin{itemize}
+    \item communication model
+    \item network topology
+    \item data handling and routing
+    \item associated software protocols
+    \item ...
+\end{itemize}
+
+The total time to transfer a message over a network comprises of the following :
+\begin{itemize}
+    \item Startup time $t_s$ : time spent at sending and receiving nodes (executing the routing algorithm, programming routers, etc...).
+    \item Per-hop time $t_h$ : function of number of hops and includes factors such as switch latencies, network delays, etc...
+    \item Per-word time $t_w$ : time which includes all overhaeds that are determined by the length of the message. This includes bandwith of links, error checking and correction, etc...
+\end{itemize}
+
+The cost of communicating a message between two nodes / hops away using cut-through routing is given by $t_{comm} = t_s + lt_h + t_wm$. By the ways, $lt_h$ is smaller than $t_s$ and $t_w$ so we generally have $t_{comm} = t_s + t_wm$.
+
+For Shared Address Space Machines, the simplified cost model is still valid, but a number of other factors make accurate cost modeling more difficult :
+\begin{itemize}
+    \item memory layout determined by the system
+    \item finite cache size can result in cache thrashing
+    \item overheads associated with invalidate and update operations are difficult to quantify
+    \item spatial locality is difficult to model
+    \item prefetching can play a role in reducing the overhead associated with data access
+    \item false sharing and contention are difficult to model
+\end{itemize}
+
+% section Communication cost (end)
+
+% chapter Architecture (end)
+
+\chapter{Models} % (fold)
+\label{cha:Models}
+
+% chapter Models (end)
+
+\chapter{Communication} % (fold)
+\label{cha:Communication}
+
+% chapter Communication (end)
+
+
+
+
+\end{document}
