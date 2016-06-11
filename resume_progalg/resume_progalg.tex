@@ -588,6 +588,346 @@ The value $\frac{T_s}{T_1}$ defines the proportion of the program which is alway
 \chapter{Communication} % (fold)
 \label{cha:Communication}
 
+Two types of communications:
+
+\begin{itemize}
+    \item Point-to-Point: between two nodes (processors or processes)
+        \begin{itemize}
+            \item Direct neighbors \(\rightarrow\) without routing
+            \item Not directly connected \(\rightarrow\) routing by 
+            intermediate nodes
+        \end{itemize}
+        
+    \item Global (group) communications: 2 or more nodes
+        \begin{itemize}
+            \item broadcast, multicast, reduction, scatter, gather ...
+        \end{itemize}
+\end{itemize}
+
+\section{Cost Model}
+
+\subsection{Parameters}
+
+
+\begin{itemize}
+    \item \(t_{L}\): Latency \([sec]\)
+    \item \(W\): Bandwidth \([byte/sec]\), amount of bytes sent during one 
+    amount of time
+    \item \(t_{S}\): routing time on intermediate nodes \([sec]\)
+    \item \(m\): message size \([byte]\)
+\end{itemize}
+
+
+\subsection{Formulas}
+
+Time \(T [sec]\) needed to transfer a message with H intermediate nodes:
+
+\(T = t_{L} + m * t_{W} + H * t_{S}\)
+
+if \(H=0\) (pint-to-point): \(T = t_{L} + m * t_{W}\)
+
+\(t_{S}\) can often be neglected: \(T = t_{L} + m * t_{W}\)
+
+\section{Routing}
+
+Two ways:
+
+\begin{itemize}
+    \item Store-and-Forward: locally stored on a node, then transmitted further
+    \item Cut-Through: not entirely stored
+    \begin{itemize}
+        \item 2 types: Circuit Switched and Worm-hole
+        \item Both based on header to set switches in advance
+    \end{itemize}
+\end{itemize}
+
+
+\section{Global communications}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{img/comm_table}
+    \caption{Types of global communications}
+    \label{fig:commtable}
+\end{figure}
+
+\subsection{One-to-All and All-to-One}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{img/comm_one-to-all}
+\caption{One-to-All: ne processor has a piece of data (of size m) it needs to 
+send to everyone}
+\label{fig:comonetoall}
+\end{figure}
+
+All-to-One:
+
+\begin{itemize}
+    \item each processor has \(m\) units to broadcast
+    \item results made available at target processor
+    \item With or without reduction:
+    \begin{itemize}
+        \item With: data items combined (reduce)
+        \item Without: \(m\) increases at each step (glued together, gather)
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{On Rings}
+
+\begin{itemize}
+    \item Naive: send $p-1$ messages from source to other $p-1$ nodes
+    \begin{itemize}
+        \item source not is bottleneck
+        \item network under-utilized
+        \item require $p-1$ steps
+    \end{itemize}
+    
+    \item Recursive doubling: at each step the node owning the message sends 
+    the message to a selected node
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/comm_ring_one-to-all}
+    \caption{One-to-All on ring. Number on arrow = step where transfer happens}
+    \label{fig:commoneallring}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/comm_ring_all-to-one}
+    \caption{All-to-One on Ring}
+    \label{fig:commringall-to-one}
+\end{figure}
+
+Number of steps: $ \log{p} = \log{2^N} $
+
+With reduction = Reduce ($m$ constant)
+
+\begin{itemize}
+    \item Transmission time for step $i$:
+    $ T_{i} = t_{L} + m*t_{W} + H_{i} * t_{S} $
+    
+    \item Total transmission time:
+    $ T = \log{p} * (t_{L} + m*t_{W}) + (p-1) * t_{S}) $
+\end{itemize}
+
+Without reduction = Gather ($m$ increases at each step)
+
+\begin{itemize}
+    \item Time for step $i$:
+    \begin{itemize}
+        \item $T_{i} = t_{L} + m_{i} * t_{W} + H_{i} * t_{s}$
+        \item $m_{i} = 2^{i} * m$
+    \end{itemize}
+    \item Total time:
+    $T=\log{p}*t_{L} + m(p-1)*t_{W} + (p-1) * t_{S}$
+\end{itemize}
+
+\subsubsection{On Mesh, Hypercube}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\linewidth]{img/comm_mesh_one-to-all}
+\caption{One-to-All on mesh}
+\label{fig:commmeshone-to-all}
+\end{figure}
+
+Formulas: 
+\begin{itemize}
+    \item dD-mesh:
+    $ \log{p}*(t_{L} + m * t_{W}) + d * (\sqrt[d]{p}-1) * t_{S})$
+    
+    \item Hypercube ($d=\log{p}$):
+    $T = \log{p} * (t_{L} + m * t_{W} + t_{S})$
+\end{itemize}
+
+
+\subsection{All-to-All}
+
+2 types:
+
+\begin{itemize}
+    \item All-to-All Broadcast: Each processor $p_{i}$ sends to all others the 
+    same $m_{i}$-word message, different processors may broadcast different 
+    messages
+    \item All-to-All Reduction: every node is the destination of 
+an all-to-one reduction, each node starts with p messages
+\end{itemize}
+
+\subsubsection{On a ring}
+
+\begin{itemize}
+    \item Half of the nodes first sends its message to one of its neighbors to 
+    initiate the all-to-all communication.
+    
+    \item In subsequent steps, each node forwards the [0,4,5,6,7] data he is 
+    receiving plus the data he is already owning to its neighbor
+    
+    \item The algorithm terminates in p steps
+\end{itemize}
+
+For reduction, inverted process. On receiving a message, a node must combine  
+(for example add) it with its local copy of the value before forwarding the 
+value message to the next neighbor.
+
+Costs on ring:
+
+\begin{itemize}
+    \item With reduction:
+    $T = p*(t_{L} + m*t_{W})$
+    
+    \item Without reduction:
+    $T = p * (t_{L} + t_{W} * m (2p-1))$
+\end{itemize}
+
+Read and write at the same time:
+
+\begin{itemize}
+    \item All of the nodes first sends its message to one of its neighbors to 
+    initiate the all-to-all communication.
+    
+    \item In subsequent steps, each node forwards the data he is receiving plus 
+    the data he is already owning to its neighbor the algorithm terminates in 
+    p-1 steps.
+    
+    \item With or without reduction at each step p messages of size m are sent 
+    and received.
+\end{itemize}
+
+Total time (with or without reduction): $T = p*(t_{L} + m*t_{W})$
+
+\subsubsection{On a mesh}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/comm_mesh_al-to-all}
+    \caption{All-to-All broadcast on a mesh}
+    \label{fig:commmeshal-to-all}
+\end{figure}
+
+Algorithm:
+
+\begin{enumerate}
+    \item Phase 1
+    \begin{itemize}
+        \item Each row of the mesh performs an all-to-all broadcast using the 
+        procedure for the ring
+        
+        \item In this phase, all nodes collect $\sqrt{p}$ messages 
+        corresponding to the $\sqrt{p}$ nodes of their respective rows
+    \end{itemize}
+    
+    \item Phase 2
+    \begin{itemize}
+        \item Columnwise all-to-all broadcast
+    \end{itemize}
+\end{enumerate}
+
+Torus is better for routing between the ends of columns/rows.
+
+Cost for Torus:
+
+\begin{itemize}
+    \item With reduction: $T = 2(\sqrt{p} * (t_{L} + m *t_{W}))$
+    \item Without reduction:
+    \begin{itemize}
+        \item Phase 1:
+        $ \sqrt{p} (t_{L} + t_{W} * m(2\sqrt{p}-1)) $
+        
+        \item Phase 2:
+        $ \sqrt{p} (t_{L} + t_{W} * \sqrt{p} * m(2\sqrt{p}-1)) $
+        
+        \item Total:
+        $ \sqrt{p} * (2t_{L} + m * (2p+\sqrt{p}-1) * t_{W}) $
+    \end{itemize}
+\end{itemize}
+
+Cost for Torus with R/W in the same step:
+
+\begin{itemize}
+    \item Without reduction:
+    \begin{itemize}
+        \item First phase:
+        $ (\sqrt{p}-1) * (t_{L} + m * t_{W}) $
+        
+        \item Second phase:
+        $ (\sqrt{p}-1) * (t_{L} + \sqrt{p} * m * t_{W}) $
+        
+        \item Total:
+        $ T = (\sqrt{p}-1) 2t_{L} + m * t_{W}(p-1) $
+    \end{itemize}
+    
+    \item With reduction: $ T = 2(\sqrt{p}-1) * (t_{L} + m * t_{W}) $
+\end{itemize}
+
+
+\subsection{Total Exchange}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{img/comm_total-exchange}
+\caption{Total exchange}
+\label{fig:commtotal-exchange}
+\end{figure}
+
+\subsubsection{On a ring}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/comm_ring_totalexchange}
+    \caption{Total exchange ring}
+    \label{fig:commringtotalexchange}
+\end{figure}
+
+Algorithm:
+
+\begin{enumerate}
+    \item Each node sends all pieces of data as one consolidated message of 
+    size $m(p – 1)$ to one of its neighbors
+    
+    \item Each node extracts the information meant for it from the data 
+    received, and forwards the remaining pieces of size $m$ each to the next 
+    node
+    
+    \item The size of the consolidated message reduces by $m$ at each step
+\end{enumerate}
+
+Cost: $ T = (p-1) * (t_{L} + t_{W} * m * p) $
+
+\subsubsection{On a mesh}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/comm_mesh_totalexchange}
+    \caption{Total exchange on a Mesh}
+    \label{fig:commmeshtotalexchange}
+\end{figure}
+
+Algorithm:
+
+\begin{enumerate}
+    \item First step
+    \begin{itemize}
+        \item All-to-All personalized communication is performed independently 
+        in each row
+        \item Each node of the row keeps all messages for which the destination 
+        is inside the column it belongs , it forwards the other ones
+    \end{itemize}
+
+    \item Second step
+    \begin{itemize}
+        \item All-to-All personalized communication is performed independently 
+        in each column
+        
+        \item Each node keeps the messages for which it is the destination, it 
+        forwards the other ones
+    \end{itemize}
+\end{enumerate}
+
+Cost: $ T=(2t_{S} +t_{W}mp)(\sqrt{p} - 1) $
+
 % chapter Communication (end)
 
 
