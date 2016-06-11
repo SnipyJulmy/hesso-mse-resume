@@ -421,19 +421,20 @@ Intuitively, the K-ring topology is a graph built using $K$ rings where each rin
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|ccccc|}
+\begin{tabular}{|ccccccc|}
     \hline
-    Network & Diameter & Bisection & Degree & Cost \\\hline
-    Completel-connected & $1$ & $\frac{p^2}{4}$ & $p-1$ & $\frac{p(p-1)}{2}$ \\
-    Star & $2$ & $1$ & $1$ & $p-1$ \\
-    Binary Tree & $2\log(\frac{p+1}{2})$ & $1$ & $1$ & $p-1$ \\
-    2-D Mesh & $p-1$ & $1$ & $1$ & $p-1$ \\ 
-    2-D Torus & $2\sqrt{p}-1$ & $\sqrt{p}$ & $2$ & $2(p-\sqrt{p})$ \\
-    Hypercube & $\log p$ & $\frac{p}{2}$ & $\log p$ & $\frac{(p \log p)}{2}$ \\
-    K-D Torus & $d\lfloor\frac{k}{2}\rfloor$ & $2k^{d-1}$ & $2d$ & $dp$ \\
-    Crossbar & $1$ & $p$ & $1$ & $p^2$ \\
-    Omega Network & $\log p$ & $\frac{p}{2}$ & $2$ & $\frac{p}{2}$ \\
-    Dynamic Tree & $2\log p$ & $1$ & $2$ & $p-1$ \\
+    Network & Diameter & Bisection & Degree & Cost & Nodes & Links \\\hline
+    Completely-connected & $1$ & $\frac{p^2}{4}$ & $p-1$ & $\frac{p(p-1)}{2}$ & $p$ & $\frac{p(p-1)}{2}$ \\
+    Star & $2$ & $1$ & $1$ & $p-1$ & $p$ & $p - 1$ \\
+    Binary Tree & $2\log(\frac{p+1}{2})$ & $1$ & $1$ & $p-1$ & $p$ & $p-1$ \\
+    2-D Mesh & $p-1$ & $1$ & $1$ & $p-1$ & $p=ab$ & $2ab-a-b$ \\ 
+    2-D Torus & $2\sqrt{p}-1$ & $\sqrt{p}$ & $2$ & $2(p-\sqrt{p})$ & $p=ab$ & $2p$ \\
+    Hypercube & $\log p$ & $\frac{p}{2}$ & $\log p$ & $\frac{(p \log p)}{2}$ & $p=2^n$ & $\frac{p}{2}\log p$ \\
+    K-D Torus & $d\lfloor\frac{k}{2}\rfloor$ & $2k^{d-1}$ & $2d$ & $dp$ & & \\
+    K-Ring & $\approx \frac{N^2 \cdot \sqrt{N}{2N}}{4} \sqrt{p}{N}$ & & $2k$ & & $p$ & $kp$ \\
+    Crossbar & $1$ & $p$ & $1$ & $p^2$ & & \\
+    Omega Network & $\log p$ & $\frac{p}{2}$ & $2$ & $\frac{p}{2}$ & & \\
+    Dynamic Tree & $2\log p$ & $1$ & $2$ & $p-1$ & &\\
     \hline
 \end{tabular}
 \end{table}
@@ -577,11 +578,126 @@ The value $\frac{T_s}{T_1}$ defines the proportion of the program which is alway
 \subsection{Gustafon law} % (fold)
 \label{sub:Gustafon law}
 
-
+This law explain that more the problem is big, better it parallelizes. Let's denote $N$ the size of the problem, we have $T_s(N) = f(N)\cdot T_1(N)$. We could found the acceleration $S_p(N)=\frac{T_1(N)}{T_p(N)} \leq \frac{p}{p \cdot f(N) +1 - f(N)}$.
 
 % subsection Gustafon law (end)
 
 % section Speedup and efficiency (end)
+
+\section{Performance} % (fold)
+\label{sec:Performance}
+
+There is two type of peformance :
+\begin{itemize}
+    \item Time performance
+        \begin{itemize}
+            \item Wall-clock time : from the first processor start to the last processor end. Problems : number of processor use on different machine.
+            \item Raw FLOP count. Problems : what good are FLOP counts when they don't solve a problem.
+        \end{itemize}
+    \item Memory performace
+\end{itemize}
+
+The main problem with performance it's that is dependent of the computer we are using, this is why we prefer the notion of complexity : time and memory complexity.
+
+\subsection{Parallel complexity} % (fold)
+\label{sub:Parallel complexity}
+
+The parallel time complexity of a parallel algorithm depends on :
+\begin{itemize}
+    \item the input size $N$
+    \item the number of processors $p$
+    \item the communication parameters of the machine
+\end{itemize}
+
+An algorithm must, therefire, be analyzed in the context of the underlying platform.
+
+% subsection Parallel complexity (end)
+
+% section Performance (end)
+
+\section{PRAM} % (fold)
+\label{sec:PRAM}
+
+Parallel Random Access machine : consist of $p$ precessors and a global memory of unbounded size that is uniformly accessible to all processors (UMA). Processors share a common clock but may execute different instructions in each cycle.
+
+For memory access we use the following :
+\begin{itemize}
+    \item Exclusive-read, Exclusive-write (EREW)
+    \item Concurrent-read, Exclusive-write (CREW)
+    \item Exclusive-read, Concurrent-write (ERCW)
+    \item Concurrent-read, Concurrent-write (CRCW)
+\end{itemize}
+
+\paragraph{Concurrent-write :}
+\begin{itemize}
+    \item Common : write only if all value are identical.
+    \item Arbitrary : write the data from a randomly selected processor.
+    \item Priority : follow a predetermined priority order.
+    \item Sum : write the sum of all data items.
+\end{itemize}
+
+% section PRAM (end)
+
+\section{BSP} % (fold)
+\label{sec:BSP}
+
+Bulk Synchronous Parallel abstract computer : composed of a set of pairs processors and local memory, a communication network a efficient synchronization mechanism.
+
+BSP execution model is a sequence of supersteps, during a superstep each processor can :
+\begin{itemize}
+    \item Do any local computation
+    \item Send request to other processors
+    \item Send data to other processors
+\end{itemize}
+
+At the end of each supersteps there is a synchronization phase between all processors where all communication are effectively realized.
+
+% section BSP (end)
+
+\section{Performance metrics} % (fold)
+\label{sec:Performance metrics}
+
+\begin{itemize}
+    \item Execution time : serial and parallel
+    \item Speedup
+    \item Efficiency
+    \item Overhead $T_o = p T_p - T_s$
+\end{itemize}
+
+The time $T_{//}(A_N)$ is the parallel execution time of the algorithm $A$ with a data of size $N$. It's define as the numbers of steps used by the PRAM machine to execute the algorithm.
+
+The surface $H_{//}(A_N)$ used by the algorithm $A$ with a data of size $N$ is defined as the maximal number of processors necessary to the PRAM machine to execute the algorithm.
+
+The work $W(A_N)$ of the algorithm $A$ with a data size of $N$ is defined by $W(A_N)=T_{//}(A_N) \cdot H_{//}(A_N)$.
+
+% section Performance metrics (end)
+
+\section{Efficient and optimal parallel algorithms} % (fold)
+\label{sec:Efficient and optimal parallel algorithms}
+
+A parallel algorithm $A$ is said efficient iff :
+\begin{itemize}
+    \item $O(T_{//}(A_N)) = \log^k(N)$
+    \item $O(W(A_N)) = T_1 O(\log^k(N))$
+\end{itemize}
+
+In other words, the time complexity of the algorithm is polylogarithmic, this means that the time complexity is better that any sequential algorithm.
+
+A parallel algorithm $A$ is said optimal iff:
+\begin{itemize}
+    \item $O(W(A_N)) = O(T_1(A_N))$
+    \item $O(T_{//}(A_N)) = \log^k(N)$
+\end{itemize}
+
+A parallel algorithm is optimal if is time complexity is polylogarithmic and if it performs the same work than the sequential algorithm.
+
+To run the algorithm we need $\frac{N}{2}$ processing elements, time complexity is $\log(N)$ and work complexity is $N\log(N)$. But the time complexity of the sequential algorithm (which is equal to the work complexity because $H=p=1$) is $O(T_1) = N$. So the algorithm is efficient but not optimal.
+
+\paragraph*{Can we make this algorithm optimal ? :}
+
+It is not optimal because the work complexity is bigger than the work complexity of the sequential algorithm. The problem comes from the surface which uses $\frac{N}{2}$ processors : $O(H_{//}(A_N)) = N$. So the solution is to optimaly use the good number of processor on local part.
+
+% section Efficient and optimal parallel algorithms (end)
 
 % chapter Models (end)
 
