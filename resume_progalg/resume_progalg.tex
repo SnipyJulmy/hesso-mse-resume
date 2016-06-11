@@ -12,6 +12,7 @@
 \usepackage{amsthm}
 \usepackage{mathtools}
 \usepackage{tikz}
+\usetikzlibrary{trees}
 
 \author{Sylvain Julmy}
 \title{ProgAlg - Résumé}
@@ -280,15 +281,15 @@ Every node is connected only to a common node at the center, the distance betwee
 
 \begin{center}
 \begin{tikzpicture}
-    \node[circle,draw,minimum size=0.7cm] (AA) at (0,2) {A};
-    \node[circle,draw,minimum size=0.7cm] (AB) at (1,2) {B};
-    \node[circle,draw,minimum size=0.7cm] (AC) at (2,2) {C};
-    \node[circle,draw,minimum size=0.7cm] (BA) at (0,1) {D};
-    \node[circle,draw,minimum size=0.7cm] (BB) at (1,1) {E};
-    \node[circle,draw,minimum size=0.7cm] (BC) at (2,1) {F};
-    \node[circle,draw,minimum size=0.7cm] (CA) at (0,0) {G};
-    \node[circle,draw,minimum size=0.7cm] (CB) at (1,0) {H};
-    \node[circle,draw,minimum size=0.7cm] (CC) at (2,0) {I};
+    \node[circle,draw,minimum size=0.7cm] (AA) at (0,2) {};
+    \node[circle,draw,minimum size=0.7cm] (AB) at (1,2) {};
+    \node[circle,draw,minimum size=0.7cm] (AC) at (2,2) {};
+    \node[circle,draw,minimum size=0.7cm] (BA) at (0,1) {};
+    \node[circle,draw,minimum size=0.7cm] (BB) at (1,1) {};
+    \node[circle,draw,minimum size=0.7cm] (BC) at (2,1) {};
+    \node[circle,draw,minimum size=0.7cm] (CA) at (0,0) {};
+    \node[circle,draw,minimum size=0.7cm] (CB) at (1,0) {};
+    \node[circle,draw,minimum size=0.7cm] (CC) at (2,0) {};
     \draw (AA) -- (AB); 
     \draw (AB) -- (AC);
     \draw (AA) -- (BA);
@@ -361,17 +362,17 @@ Every node is connected only to a common node at the center, the distance betwee
     \draw (C12) -- (C2);
     \draw (D12) -- (D2);
 
-    \draw (A2) .. controls +(down:1cm) and +(down:1cm) ..  (A);
-    \draw (A12) .. controls +(up:1cm) and +(up:1cm) ..  (A1);
+    \draw (A2) .. controls +(down:0.9cm) and +(down:0.9cm) ..  (A);
+    \draw (A12) .. controls +(up:0.9cm) and +(up:0.9cm) ..  (A1);
 
-    \draw (B2) .. controls +(down:1cm) and +(down:1cm) ..  (B);
-    \draw (B12) .. controls +(up:1cm) and +(up:1cm) ..  (B1);
+    \draw (B2) .. controls +(down:0.9cm) and +(down:0.9cm) ..  (B);
+    \draw (B12) .. controls +(up:0.9cm) and +(up:0.9cm) ..  (B1);
 
-    \draw (C2) .. controls +(down:1cm) and +(down:1cm) ..  (C);
-    \draw (C12) .. controls +(up:1cm) and +(up:1cm) ..  (C1);
+    \draw (C2) .. controls +(down:0.9cm) and +(down:0.9cm) ..  (C);
+    \draw (C12) .. controls +(up:0.9cm) and +(up:0.9cm) ..  (C1);
 
-    \draw (D2) .. controls +(down:1cm) and +(down:1cm) ..  (D);
-    \draw (D12) .. controls +(up:1cm) and +(up:1cm) ..  (D1);
+    \draw (D2) .. controls +(down:0.9cm) and +(down:0.9cm) ..  (D);
+    \draw (D12) .. controls +(up:0.9cm) and +(up:0.9cm) ..  (D1);
 
 \end{tikzpicture}
 \end{center}
@@ -393,7 +394,7 @@ Intuitively, the K-ring topology is a graph built using $K$ rings where each rin
 \paragraph*{Conventions} :
 \begin{itemize}
     \item With such a construction each $a_j$ defins a ring on the $N$ nodes, this ring will be identified as the $ring_j$ and $a_j$ will be called the $step_j$.
-    aitem By renumbering the nodes it is always possible, for any $K$-rings to obtain a $ring_j$ with a $step_j$ equal to $1$. By convention, we decide that this ring is numbered by $1$. Consequently we will only consider $K$-rings with $a_1=1$.
+    \item By renumbering the nodes it is always possible, for any $K$-rings to obtain a $ring_j$ with a $step_j$ equal to $1$. By convention, we decide that this ring is numbered by $1$. Consequently we will only consider $K$-rings with $a_1=1$.
 \end{itemize}
 
 % subsection K-ring (end)
@@ -483,6 +484,104 @@ For Shared Address Space Machines, the simplified cost model is still valid, but
 
 \chapter{Models} % (fold)
 \label{cha:Models}
+
+There is three sources of parallelism :
+\begin{itemize}
+    \item Control parallelism : do several things at once.
+    \item Data parallelism : doing the same thing on multiple data.
+    \item Flow parallelism : chain work.
+\end{itemize}
+
+\section{Control parallelism} % (fold)
+\label{sec:Control parallelism}
+
+\begin{center}
+\begin{tikzpicture}[every node/.style = {shape=circle,draw,align=center, minimum size=0.8cm},
+    level distance=1.5cm,
+    level 1/.style={sibling distance=3cm},
+    level 2/.style={sibling distance=2cm},
+    level 3/.style={sibling distance=1cm},
+    level 4/.style={sibling distance=1cm}]
+    \node {$-$} 
+        child { node {$*$}
+            child { node {$+$}
+                child { node {$a$}}
+                child { node {$2$}}}
+            child { node {$+$}
+                child { node {$b$}}
+                child { node {$c$}}}}
+        child { node {$-$}
+            child { node {$d$}}
+            child { node {$1$}}};
+\end{tikzpicture}
+\end{center}
+
+The computation is seen as a evaluation tree where each sub-tree can be computed separly, but there is dependencies between computation. The charge balancing is in charge of programmers.
+
+% section Control parallelism (end)
+
+\section{Data parallelism} % (fold)
+\label{sec:Data parallelism}
+
+The data parallelism is based on the observation that we often have to repeat some action on similar data and a lot of application use large amount of data, like array or matrix, on which they compute some data.
+
+The idea is based on the divide-and-conquer paradigm in which we could sort the $4$ part of an array and merge them at the end.
+
+% section Data parallelism (end)
+
+\section{Flow parallelism} % (fold)
+\label{sec:Flow parallelism}
+
+The idea comes from the fact that some applications may run along a line work. The typical use of parallel flow is when you have a function $f(x)$ which could be decomposed into several ones : $f(x) = f_1(f_2(f_3(...(f_p(x)...))))$. That is call a pipeline.
+
+% section Flow parallelism (end)
+
+\section{Speedup and efficiency} % (fold)
+\label{sec:Speedup and efficiency}
+
+\subsection{Speedup} % (fold)
+\label{sub:speedup}
+
+The speedup is given by $S(p)=\frac{T_1}{T_p}$, where $T_1$ is the sequential time to solve $p$ and $T_p$ is the parallel time to solve $p$. Speedup could only be consider for solving the same problem and we must clearly specify what we exactly compare.
+
+The ideal reference value is a linear function $S(p)=p$. Usualy $S(p) < p)$ because of overhaed like communication, idling, contention,...
+% subsection speedup (end)
+
+\subsection{Efficiency} % (fold)
+\label{sub:Efficiency}
+
+The efficiency $E(p)$ is the ration between the speedup and the number of processing element $p$ : $E(p)=\frac{S(p)}{p}$. If $E(p) = 1$, this is optimal because we have $S(p)=p$.
+
+% subsection Efficiancy (end)
+
+\subsection{Amdahl law} % (fold)
+\label{sub:Amdahl law}
+
+This law consider that the execution time $T_1$ of a sequential program can be split into two part : $T_s$ and $T_{//}$. Where $T_s$ is the sequential part of the program and $T_{//}$ the parallel ones. So we have $T_1 = T_s + T_{//}$. Using $p$ processing element result of having $T_p \geq T_s + \frac{T_{//}}{p}$.
+
+Now we take the speedup and we having the following equation :
+$$
+S(p) \leq \frac{T_s+T_{//}}{T_s + \frac{T_{//}}{p}}
+$$
+Then we compute the limit of $p$ to $\infty$ :
+$$
+\lim_{p\rightarrow \infty} S(p) = S(\infty) \geq \frac{T_s + T_{//}}{T_s} = \frac{T_1}{T_s} = \frac{T_s}{T_1}^{-1}
+$$
+
+The value $\frac{T_s}{T_1}$ defines the proportion of the program which is always sequential.
+
+\paragraph*{Consequences :} The Amdahl law expresses the fact that the upper bound of the speedup is inversely proportional to the percentage of the code which is sequential.
+
+% subsection Amdahl law (end)
+
+\subsection{Gustafon law} % (fold)
+\label{sub:Gustafon law}
+
+
+
+% subsection Gustafon law (end)
+
+% section Speedup and efficiency (end)
 
 % chapter Models (end)
 
