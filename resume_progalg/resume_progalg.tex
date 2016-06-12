@@ -17,6 +17,9 @@
 \author{Sylvain Julmy}
 \title{ProgAlg - Résumé}
 
+\newcommand{\Uu}[1]{\overset{\nearrow}{#1}}
+\newcommand{\Dd}[1]{\overset{\searrow}{#1}}
+
 \begin{document}
 
 \maketitle
@@ -1046,7 +1049,118 @@ Cost: $ T=(2t_{S} +t_{W}mp)(\sqrt{p} - 1) $
 
 % chapter Communication (end)
 
+\chapter{Sorting algorithms} % (fold)
+\label{cha:Sorting algorithms}
+
+\section{Constant time sorting algorithm} % (fold)
+\label{sec:Constant time sorting algorithm}
+
+The constant time sorting algorithm is not efficient because is work complexity $ = O(N^2) = O(N \log^{k+1}(N))$. This algorithm is not optimal either. Is surface complexity is $O(H_{//}(A_N)) = O(N^2)$.
+
+% section Constant time sorting algorithm (end)
+
+\section{Sorting network} % (fold)
+\label{sec:Sorting network}
+
+A Sorting network is a network of comparators designed specifically for sorting. A comparator is a device with $2$ inputs and $2$ outputs $x_{out} = min(x_{in},y_{in})$ and $y_{out} = max(x_{in},y_{in})$ or the inverse (increasing comparator for first and decreasing comparator for the second).
+
+Every sorting network is made up of a series of columns and each column contains a number of comparators connected in parallel.
+
+\begin{center}
+\begin{tikzpicture}
+    \node[rectangle,draw] (A) at (0,0) {Input data};
+    \node[rectangle,draw,minimum size=1cm] (D) at (2,-2) {};
+    \node[rectangle,draw,minimum size=1cm] (B) at (2,0) {};
+    \node[rectangle,draw,minimum size=1cm] (C) at (2,2) {};
+
+    \node[rectangle,draw,minimum size=1cm] (D1) at (6,-2) {};
+    \node[rectangle,draw,minimum size=1cm] (B1) at (6,0) {};
+    \node[rectangle,draw,minimum size=1cm] (C1) at (6,2) {};
+
+    \node[rectangle,draw,minimum size=1cm] (D2) at (8,-2) {};
+    \node[rectangle,draw,minimum size=1cm] (B2) at (8,0) {};
+    \node[rectangle,draw,minimum size=1cm] (C2) at (8,2) {};
+
+    \node[] (F) at (6,-4) {Column of comparators};
 
 
+    \node[rectangle,draw] (A1) at (10,0) {Output data};
+
+    \draw (A) -- (B) -- (B1) -- (B2) -- (A1);
+    \draw (A) -- (C) -- (C1) -- (C2) -- (A1);
+    \draw (A) -- (D) -- (D1) -- (D2) -- (A1);
+    \draw[->] (F) -- (D1);
+    \draw[->] (F) -- (D);
+    \draw[->] (F) -- (D2);
+
+
+    \node[rectangle,draw,minimum width=6cm,minimum height=1cm, rotate=90] (E) at (3.5,0) {Intercommunication network};
+\end{tikzpicture}
+\end{center}
+
+A network with $n$ inputs performing a $max$ operation is denoted by $\ominus BM[n]$
+
+\section{Bitonic sort} % (fold)
+\label{sec:Bitonic sort}
+
+First, we define what is a bitonic sequence. A bitonic sequence has two tones : increasing then decreasing, or vice versa and any cyclic rotation of a bitonic sequence is also bitonic.
+
+$\langle 1,2,3,7,6,0 \rangle$ and $\langle 9,2,1,0,4,8 \rangle$ are bitonic sequence.
+
+The bitonic sort is the following :
+\begin{itemize}
+    \item Build a single bitonic sequence from the given unsorted sequence
+    \item Rearrange the bitonic sequence into a sorted one
+\end{itemize}
+
+A bitonic sorting network sorts $n$ elements in $O(\log^2n)$ time.
+
+To sort a bitonic sequence :
+\begin{itemize}
+    \item Let $s = \langle a_0,a_1,...,a_{n-1} \rangle$ a bitonic sequence.
+    \item Consider the two subset of $s = \{s_1,s_2\}$
+        \begin{itemize}
+            \item $s_1 = \langle min(a_0,a_{n/2}),min(a_1,a_{n/2 + 1}),... \rangle$.
+            \item $s_2 = \langle max(a_0,a_{n/2}),max(a_1,a_{n/2 + 1}),... \rangle$.
+        \end{itemize}
+    \item $s_1,s_2$ are bitonic sequence too and each element of $s_1$ is less or equals to each element of $s_2$.
+    \item Apply the procedure recursively too fully sort $s$.
+\end{itemize}
+
+The sorting network which use the bitonic algorithm contains $\log n$ columns and each columns contains $\frac{n}{2}$ comparators. In this case we perform a $min$ operation.
+
+Now we need to transform any sequence into a bitonic ones :
+\begin{itemize}
+    \item A sequence of length $2$ is always bitonic.
+    \item A bitonic sequence of length $4$ by sorting the first two elements using $\oplus BM[2]$ and next two element using $\ominus BM[2]$.
+    \item This process can be reapeted to generate larger bitonic sequences.
+\end{itemize}
+
+The network of this algorithm contains $\frac{n}{2}$ with a $\oplus BM[2]$ on even place of the horizontal. This algorithm could also be mapped to meshes by performing compare-exchange operation between two wire only ig their labels differ in exactly one bit. The complexity for the mesh is $T_P = O(\log^2n) + O(\sqrt{n})$,this is not the optimal cost.
+
+When each processor hsa more than one value, the compare-exchange operation is replaced by the compare-split operation :
+
+\begin{itemize}
+    \item assume each processor have $\frac{n}{p}$ elements.
+    \item after the operation, the smaller $\frac{n}{p}$ are at processor $P_i$ and the larger at $P_j$, where $i < j$.
+    \item the complexity of a compare-split is $O(\frac{n}{p})$.
+    \item the communication time is $t_s + t_w \frac{n}{p}$ (assuming they are neighbour).
+    \item when $n$ increase, $t_s$ becomes insignificant.
+    \item the global complexity is $O(\frac{n}{p})$.
+\end{itemize}
+
+\begin{enumerate}
+    \item each process sens its block of size $\frac{n}{p}$ to the other process
+    \item each process merges the received block with its own block
+    \item each process retains only the appropriate half of the merged block (process $P_i$ retains the smaller elements and $P_j$ the larger)
+\end{enumerate}
+
+\paragraph*{Quicksort :} $O(n \log n)$.
+
+\paragraph*{Mergesort :} $O(n \log n)$, but on a PRAM $O(n)$ with $O(T_{//}(A_N)) = O(N^2)$, neither efficient or optimal : communication overhead.
+
+% section Sorting network (end)
+
+% chapter Sorting algorithms (end)
 
 \end{document}
