@@ -707,7 +707,46 @@ Méthodes :
 \begin{itemize}
     \item Identifier les points d'atomicités (mettre les traits bleu au endroit logique);
     \item Traiter les opérations pendantes (si point d'atomicité atteint, on écrit le retour de la méthode à la fin de l'historique, sinon on la supprime);
-    \item Trouver un historique séquentiel équivalent.
+    \item Trouver un historique séquentiel équivalent (faire des échanges dans les éléments de l'historique, garder la cohérence des points d'atomicités, couplés les invocations et méthodes correspondantes).
+\end{itemize}
+
+
+Un historique est cohérent séquentiel s'il peut être étendue à un autre historique séquentiel respectant l'ordre des opérations faites par chaque thread pris en isolation, il n'est pas forcément atomique.
+
+\section*{Propriétés}
+
+\begin{itemize}
+    \item L'atomicité est une relation plus restrictive que la cohérence séquentille.
+    \item Si un historique $H$ est atomique, alors tous les objets $x$ dans $H$ , $H|x$ l'est aussi.
+    \item L'inverse est vrai aussi, si pour tous les objets $x$ dans $H$, $H|x$ est atomique, alors $H$ l'est aussi.
+\end{itemize}
+
+Un objet est dit bloquant si il comporte des verrous :
+\begin{itemize}
+    \item Empêche le progrès des autres
+    \item Facile à implémenter (les points d'atomicité sont au relâchement des verrous et donnent des historiques séquentiels)
+\end{itemize}
+
+Un objet est dit sans attente si chaque appel aux méthodes de l'objet se termine après un nombre fixe d'instruction :
+\begin{itemize}
+    \item Tous les threads progressent et ne sont pas empêchés par les autres.
+    \item Aucune famine.
+    \item Généralement difficile à réaliser.
+\end{itemize}
+
+Un objet est dit sans verrou si les appels aux méthodes de l'objet se terminent éventuellement (par exemple, on boucle dans la méthode jusqu'à avoir du travail) :
+\begin{itemize}
+    \item Famine possible mais pas observable en pratique.
+    \item Plus facile à réaliser qu'un objet sans attente.
+\end{itemize}
+
+Un objet est dit sans obstruction si l'exécution des méthodes de l'objet se termine après un nombre fixe d'instructions quand l'appelant (thread) exécute seul :
+\begin{itemize}
+    \item Ces objet ne comportent pas de verrou mais ne garantissent pas que des threads soient en attente sur d'autre.
+    \item Les méthodes font appel à des mises en veille (sleep).
+    \item Famine possible mais pas observable en pratique.
+    \item Diffile à dimensionner les attentes car elles dépendent de l'architecture.
+    \item Exemple : verrou TATAS avec attente.
 \end{itemize}
 
 % section Atomicité (end)
