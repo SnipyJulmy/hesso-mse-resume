@@ -10,6 +10,28 @@
 \usepackage{parskip}
 \usepackage{fullpage}
 \usepackage{amsthm}
+\usepackage{etoolbox}
+\usepackage{tcolorbox}
+\usepackage{multirow}
+\usepackage[ruled]{algorithm2e}
+
+\BeforeBeginEnvironment{minted}%
+     {\begin{tcolorbox}}%
+\AfterEndEnvironment{minted}
+   {\end{tcolorbox}}%
+
+\tcbuselibrary{theorems}
+
+\newtcbtheorem[]{mytheo}{Théorème}%
+{colback=green!5,colframe=green!35!black,fonttitle=\bfseries}{th}
+
+\usepackage{minted}
+\usemintedstyle{manni}
+\newminted{c}{
+    tabsize=4,
+    fontsize=\small,
+    gobble=4
+}
 
 \author{Sylvain Julmy}
 \title{PCM - Résumé}
@@ -82,9 +104,7 @@ $A$ peut se définir comme étant
 \section{Relation entre $S(n)$ et $A$} % (fold)
 \label{sec:Relation entre $S(n)$ et $A$}
 
-Soit $A$ le parallélisme moyen d'une application, $S(n)$ son gain de vitesse pour
-$n$ coeurs et $E(n)$ l'efficacité des $n$ coeurs. Alors $S(n) \geq \frac{nA}{n+A-1}$ et $E(n) \geq
-\frac{A}{n+A-1}$.
+Soit $A$ le parallélisme moyen d'une application, $S(n)$ son gain de vitesse pour $n$ coeurs et $E(n)$ l'efficacité des $n$ coeurs. Alors $S(n) \geq \frac{nA}{n+A-1}$ et $E(n) \geq \frac{A}{n+A-1}$.
 
 % section Relation entre $S(n)$ et $A$ (end)
 
@@ -103,55 +123,523 @@ La programmation concurrente multicoeurs est difficile :
 
 \chapter{Exclusion mutuelle} % (fold)
 \label{cha:Exclusion mutuelle}
-Un thread est une suite ordonnée d'événemments.
+Un thread est une suite ordonnée d'événemments. Si $a_0$ et $a_1$ sont deux événements d'un thread, on peut les représenter schématiquement sur l'axe du temps. Un intervalle $A=(a,b)$ est l'activité (ensemble d'événements) compris entre deux événements spécifiques $a$ et $b$.
+
+Un événement $a$ précède $b$ si $a$ se produit avant $b$ : se note $a \rightarrow b$. Un intervalle $A=(a_0,a_1)$ précède $B=(b_0,b_1)$, si $a_1 \rightarrow b_0$ ou $a_1 = b_0$. Propriétés :
+\begin{itemize}
+    \item irréflexive $A \rightarrow A$ est toujours faux
+    \item antisymmétrique : si $A \rightarrow B$ alors $B \rightarrow A$ est faux
+    \item transitive : si $A \rightarrow B \vee B \rightarrow C$ alors $A \rightarrow C$
+\end{itemize}
+
+La précédence ne peut être définis si $A$ et $B$ sont dans des threads différents. Les intervalles qui représentes les sections critiques de deux programmes ne peuvent pas se chevaucher.
 
 \section{Algorithme de Peterson} % (fold)
 \label{sec:Algorithme de Peterson}
 
+\begin{ccode}
+volatile boolean_t flag[] = {FALSE,FALSE};
+volatile unsigned victim;
+
+cilk int Thread(unsigned i) // i = 0 ou 1
+{
+    unsigned j = 1 - i;
+    flag[i] = TRUE;
+    victim = i;
+    Cilk_fence();
+
+    while (flag[j] && victim == i);
+    // section critique
+    flag[i] = FALSE;
+
+    Cilk_fence();
+    return 0;
+}
+\end{ccode}
 % section Algorithme de Peterson (end)
+
+L'algorithme de Peterson garanti l'exclusion mutuelle. Cet algorithme est dépourvue d'interblocage (un interblocage surgit quand aucun thread ne peut progresser), pour qu'il en ai un dans notre cas, il faudrait que les deux threads soient pris dans leur bloucle respective. L'algorithme de Peterson est aussi dépouvue de famine.
+
+Pour $n$ threads, on crée $n+1$ niveaux, quand un thread est en dehors de sa section critique, il est au niveau $0$. Si un thread souhaite entrer en section critique, il doit franchir les $n$ niveaux restant. \`{A} chaque niveaux $i$ il ne peut y avoir que $n-i+1$ threads au maximum.
+
+\begin{ccode}
+    unsigned n;         // nombre de threads
+    unsigned level[n];  // niveau courant du thread i (ini à 0)
+    unsigned victim[n]; // victime au niveau L
+
+    cilk int Thread(unsigned i) // i = 0..n-1
+    { 
+        unsigned k, L;
+        for (L = 1; L < n; L += 1)
+        {
+            level[i] = L;
+            victim[L] = i;
+            Cilk_fence();
+
+            for (k = 0; k < n; )
+            {
+                if (k != i && level[k] >= L && victim[L] == i)
+                    k = 0;
+                else
+                    k += 1;
+            }
+        }
+        // section critique
+        level[i] = 0;
+
+        Cilk_fence();
+        return 0;
+    } 
+\end{ccode}
+
+Affirmations :
+\begin{itemize}
+    \item Quand $T_i$ passe au du niveau $L$ au niveau $L+1$, uniquement une des deux conditions est possible :
+        \begin{itemize}
+            \item C1 : $T_i$ précède tous les autres threads
+            \item C2 : $T_i$ n'est pas le seul au niveau $L$
+        \end{itemize}
+    \item S'il y a plus d'un thread au niveau $L$, il doit y avoir au moins $1$ threads dans tous les niveaux $1$ à $L-1$
+    \item Il y a au plus $n-L+1$ threads au niveau $L$
+\end{itemize}
 
 \section{Algorithme de la boulangerie} % (fold)
 \label{sec:Algorithme de la boulangerie}
+
+Idée : chaque thread choisit un numéro en entrant qui reflète son ordre de passage (comme à la poste).
+
+L'algorithme ne s'appuie sur aucun dispositif centralisé et chaque thread choisit son propre numéro en fonction de ceux pris par les autres. En cas d'égalité, il faut départager les threads :
+$$
+n_i << n_j \text{ si } n_i < n_j \vee (n_i = n_j \wedge i < j)
+$$
+
+avec $n_i$ et $n_j$ sont des numéros tirés respectivement par les threads $i$ et $j$.
+
+L'algorothme dispose de deux tableaux : \texttt{flag[i]} (état du thread $i$) et \texttt{label[i]} (numéro tiré par thread $i$). Avec $0$ initilement dans toutes les cases de tous les threads.
+
+\begin{ccode}
+    unsigned threads;        // nombre de threads
+    boolean_t flag[threads]; // état courant du thread i
+    int64_t label[threads];  // numéro pris par le thread i
+
+    cilk int Thread(unsigned i) // i = 0..threads-1
+    {
+        unsigned j, k;
+        int64_t max;
+        flag[i] = TRUE;
+
+        for (max = label[0], k = 1; k < threads; k += 1)
+            if (label[k] > max) max = label[k];
+                label[i] = max + 1;
+
+        Cilk_fence();
+
+        for (k = 0; k < threads; )
+            if (flag[k] && label[i] >> label[k])
+                k = 0;
+            else
+                k += 1;
+
+        // SC
+        flag[i] = FALSE;
+
+        Cilk_fence();
+        return 0;
+    } 
+\end{ccode}
+
+L'algorithme préserve l'exclusion mutuelle (voir slides $20$ - $21$). Il n'y a pas d'interblocage : \texttt{label[A] >> label[B]} pour $A$ et \texttt{label[B] >> label[A]} pour $B$, donc impossible. L'algorithme garantit un traitement FIFO. C'est un algorithme simple et équitable mais pas pratique : il faut lire $n$ variables différentes. Si $n$ est grand, la pénalité est grande (loi d'Amdahl).
+
+\begin{center}
+    \begin{tabular}{cc|c|c|}
+    \cline{3-4}
+                                                      &            & \multicolumn{2}{c|}{writer (W)} \\ \cline{3-4} 
+                                                      &            & single (S)      & multi (M)     \\ \hline
+    \multicolumn{1}{|c|}{\multirow{2}{*}{reader (R)}} & single (S) & SRSW            & SRMW          \\ \cline{2-4} 
+    \multicolumn{1}{|c|}{}                            & multi (M)  & MRSW            & MRMW          \\ \hline
+    \end{tabular}
+\end{center}
+
+\begin{mytheo}{Variables partagées}{var-par}
+    Au moins $n$ MRSW variables partagées sont nécessaire pour résoudre le problème de l'exclusion mutuelle avec $n$ threads
+\end{mytheo}
 
 % section Algorithme de la boulangerie (end)
 
 \section{Verrou TAS} % (fold)
 \label{sec:Verrou TAS}
 
+Certaines architectures offrent une instruction atomique mettant un mot à vrai et retournant sa valeur précédente :
+
+\begin{ccode}
+    bool TestAndSet(bool* adr)
+    {
+        bool val = *adr;
+        *adr = true;
+        return val;
+    }
+\end{ccode}
+
+Avec cela on peut faire un verrou (verrou TAS) :
+
+\begin{ccode}
+    bool lock = false; // lock
+
+    void TAS_AcquireLock(bool* lock)
+    {
+        while(TestAndSet(lock));
+    }
+
+    void TAS_RealeaseLock(bool* lock)
+    {
+        *lock = false;
+    }
+\end{ccode}
+
+Propriétés :
+\begin{itemize}
+    \item Nécessite $1$ booléen par verrou (indépendant du nombre de threads)
+    \item Famine possible en théorie mais improbable en pratique
+    \item Pas FIFO
+    \item Si l'architecture a des antémémoires cohérentes, chaque appel à \texttt{TestAndSet} crée une invalidation des antémémoires ce qui augemente le trafic sur les bus.
+\end{itemize}
+
 % section Verrou TAS (end)
 
 \section{Verrou TATAS} % (fold)
 \label{sec:Verrou TATAS}
+
+\begin{ccode}
+    bool lock = false; // verrou
+    void TATAS_AcquireLock(bool *lock)
+    {
+        while (true)
+        {
+            while (*lock);
+            if (!TestAndSet(lock))
+                return;
+        }
+    } 
+
+    void TATAS_ReleaseLock(bool *lock)
+    {
+        *lock = false;
+    } 
+\end{ccode}
+
+TATAS est logiquement équivalent à TAS mais diffère en performance. Environ $25\%$ plus rapide sur un Core 2 Duo avec $2$ threads.
 
 % section Verrou TATAS (end)
 
 \section{Verrou TATAS avec attente} % (fold)
 \label{sec:Verrou TATAS avec attente}
 
+\begin{ccode}
+    void TATASBackoffAcquireLock(bool *lock)
+    {
+        int delay;
+
+        while (*lock);
+            if (!TestAndSet(lock))
+                return;
+
+        delay = random(MIN_DELAY,MAX_DELAY);
+
+        while (true)
+        {
+            sleep(delay);
+            while (*lock);
+                if (!TestAndSet(lock))
+                    return;
+            delay = min(2*delay,MAX_WAIT);
+        }
+    } 
+\end{ccode}
+
+Si le \texttt{TestAndSet()} de TATAS ne réussit pas, c'est qu'il y a d'autre threads qui sollicitent le verrou $lock$. On attend donc un temps aléatoire avant de réessayer. Le gain en peformance augmente avec le nombre de coeurs. Portabilité et redimensionnement des délais difficile.
+
 % section Verrou TATAS avec attente (end)
 
 \section{Verrou ticket à attente proportionnelle} % (fold)
 \label{sec:Verrou ticket à attente proportionnelle}
+
+\begin{ccode}
+    typedef struct
+    {
+        unsigned nextTicket;
+        unsigned nowServing;
+    } LOCK;
+
+    LOCK lock = {0U,0U};
+
+    void TicketAcquireLock(LOCK *lock)
+    {
+        unsigned myTicket = FetchAndIncrement(lock->nextTicket);
+        while (true)
+            if (lock->nowServing == myTicket)
+                return;
+            else
+                sleep(myTicket - lock->nowServing);
+    }
+
+    void TicketReleaseLock(LOCK *lock)
+    {
+        lock->nowServing += 1;
+    } 
+\end{ccode}
+
+L'idée revient à prendre un numéro et à attendre son tour, l'implémentation utilise l'instruction atomique \texttt{FetchAndIncrement} :
+
+\begin{ccode}
+    int FetchAndIncrement(int *num)
+    {
+        int pred = *num;    // fetch
+        *num += 1;          // increment
+        return pred;
+    } 
+\end{ccode}
 
 % section Verrou ticket à attente proportionnelle (end)
 
 \section{Verrou Anderson} % (fold)
 \label{sec:Verrou Anderson}
 
+L'idée est de réaliser une file FIFO où chaque coeur boucle sur une variable qui lui est propre. L'implémentation utilise deux instructions atomiques : \texttt{AtomicAdd} et \texttt{FetchAndIncrement} :
+
+\begin{ccode}
+    int AtomicAdd(int *num, int inc)
+    {
+        return *num += inc;
+    }    
+\end{ccode}
+
+Algorithme :
+
+\begin{algorithm}[h] %{{{
+    \KwData{Un tableau de booléen : $slots$, avec la première case à true et les autres à false}
+    \KwData{Un $int$ : $nextSlot$, la prochaine case de libre}
+    $T_1$ acquiert le verrou par un \texttt{FetchAndIncrement} sur \verb|slot[nextSlot]|, ce qui retourne true et incrémente \verb|nextSlot|\;
+    $T_2$ veut acquérir le verrou, il fait un $FAI$ mais obtient false. \verb|nextSlot| est incrémenté quand même\;
+    $T_2$ attend car sont slot est à false\;
+    $T_1$ rend le verrou est mettant son slot + $1$ à true\;
+    $T_2$ voit true dans son slot et commence sa SC\;
+    \caption{Verrou Anderson}
+    \label{algo:verrou-anderson}
+\end{algorithm} %}}}
+
+\begin{ccode}
+    typedef struct
+    {
+        bool *slots;
+        int nextSlot;
+    } LOCK;
+
+    int numThreads;
+
+    LOCK *AndersonCreateLock(void)
+    {
+        LOCK *lock;
+        int i;
+        if ((lock = (LOCK *)malloc(sizeof(LOCK))) != NULL)
+            if (lock->slots = (bool *)malloc(numThreads *sizeof(bool)))
+            {
+                lock->slots[0] = true;
+                for (i = 1; i < numThreads; i += 1)
+                lock->slots[i] = false;
+                lock->nextSlot = numThreads;
+            }
+            else
+            {
+                free(lock); lock = NULL;
+            }
+        return lock;
+    }
+
+    int AndersonAcquireLock(LOCK *lock)
+    {
+        int mySlot = FetchAndIncrement(&lock->nextSlot);
+
+        if (mySlot % numThreads == 0)
+            AtomicAdd(&lock->nextSlot,-numThreads);
+        mySlot %= numThreads;
+
+        while (!lock->slots[mySlot]);
+
+        lock->slots[mySlot] = false;
+        return mySlot;
+    }
+
+    void AndersonReleaseLock(LOCK *lock, int mySlot)
+    {
+        lock->slots[(mySlot+1) % numThreads] = true;
+    }
+\end{ccode}
+
+Ce verrou nécessite un tableau par verrou et $1$ mot pou représenter le verrou : pour $V$ verrous et $T$ threads, il faut $V(T+1)$ mots. Le nombre de threads de l'application doit être statique.
+
 % section Verrou Anderson (end)
 
 \section{Verrou Graunke et Thakkar} % (fold)
 \label{sec:Verrou Graunke et Thakkar}
+
+Même propriétés que le verrou d'Anderson mais avec une instruction atomique en moins, lergèrement plus performant. Utilise l'instruction atomique \texttt{FetchAndStore}.
+
+\begin{ccode}
+    int FetchAndStore(int *adr, int val)
+    {
+        int ret = *adr;  // fetch
+        *adr = val;      // store
+        return ret;
+    } 
+\end{ccode}
+
+\begin{algorithm}[h] %{{{
+    \KwData{Un tableau de booléen : $slots$, initialisé à true}
+    \KwData{Un pointeur sur bool : $tail$, ontient le dernier thread avec le verrou}
+    \KwData{Un bool $whatIsLocked$ initilisé à false}
+    $T_1$ essaie d'acquérir le verrou : FetchAndStore sur un tuple \texttt{(tail,whatIsLocked)} et récupère \texttt{(before,spin)}\;
+    $T_1$ boucle sur \texttt{spin == *before} \tcp*{attente active}
+    $T_1$ rentre en section critique\;
+    $T_2$ essaie d'acquérir le verrou\;
+    $T_2$ boucle sur \texttt{spin == *before} \tcp*{attente active}
+    $T_1$ met \texttt{slots[id] = !slots[id]}
+    $T_2$ aquiert le verrou et rentre en section critique\;
+    \caption{Verrou Graunke et Thakkar}
+    \label{algo:verrou-graunke-thakkar}
+\end{algorithm} %}}}
+
+C'est algorithme est possible car l'implémentation se fie sur le fait que les adresses sont alignées sur des adresses paires. La variable \texttt{tail} peut alors être fusionnée avec \texttt{whatIsLocked} : le dernier bit de l'adresse prend alors la valeur de \texttt{whatIsLocked}.
+
+\begin{ccode}
+    typedef struct
+    {
+        bool *slots;
+        bool *tail;
+    } LOCK;
+
+    int numThreads;
+    LOCK *GraunkeThakkarCreateLock(void)
+    {
+        LOCK *lock;
+        int i;
+        if ((lock = (LOCK *)malloc(sizeof(LOCK))) != NULL)
+            if ((lock->slots = (bool *)malloc(numThreads *sizeof(bool))) != NULL)
+            {
+                for (i = 0; i < numThreads; i += 1)
+                    lock->slots[i] = 0x1;
+                lock->tail = &lock->slots[0];
+            }
+            else
+            {
+                free(lock); lock = NULL;
+            }
+        return lock;
+    }
+
+    void GraunkeThakkarAcquireLock(LOCK *lock, int threadID)
+    {
+        bool *before, *mySlot, spin;
+        mySlot = &lock->slots[threadID] | lock->slots[threadID];
+        before = (bool *)FetchAndStore(lock->tail,mySlot);
+        
+        spin = before & 0x1;
+        before ^= spin;
+        while (spin == *before);
+    }
+
+    void GraunkeThakkarReleaseLock(LOCK *lock, int threadID)
+    {
+        lock->slots[threadID] ^= 0x1;
+    }
+\end{ccode}
 
 % section Verrou Graunke et Thakkar(end)
 
 \section{Verrou MCS} % (fold)
 \label{sec:Verrou MCS}
 
+L'idée est de former une list chaînée représentant l'ordre des requêtes où chaque thread boucle sur une variable différente qu'ilmet à disposition. Cela utilse l'instruction \texttt{CompareAndSwap}:
+
+\begin{ccode}
+    bool CompareAndSwap(int *adr, int expectedVal, int newVal)
+    {
+        if (*adr == expectedVal)
+        {
+            *adr = newVal;
+            return true;
+        }
+        else
+            return false;
+    }
+\end{ccode}
+
+\begin{algorithm}[h] %{{{$
+    \KwData{Un id \texttt{id}}
+    \KwData{Un noeud avec un booléen \texttt{locked} et un pointeur sur le suivant \texttt{next}}
+    \KwData{Un noeud global \texttt{lock}}
+    $T_1$ tente d'acquérir le verrou, il fait un \texttt{FetchAndStore} sur \texttt{lock} et stocke son propre noeud\;
+    $T_1$ rentre en section critique car \texttt{lock} vaut \texttt{NULL}\;
+    $T_2$ tente d'acquérir le verrou, il fait un \texttt{FetchAndStore} sur \texttt{lock} et stocke son propre noeud\;
+    $T_2$ boucle sur son propre noeud car \texttt{lock} n'est pas \texttt{NULL}\;
+    $T_1$ relache le verrou et effectuant un \texttt{CompareAndSwap} sur \texttt{(lock,myNode,NULL)}\;
+    \caption{Verrou MCS}
+    \label{algo:verrou-mcs}
+\end{algorithm} %}}}
+
+\begin{ccode}
+    typedef struct QNODE
+    {
+        struct QNODE *next;
+        bool locked;
+    } QNODE;
+
+    int numThreads;
+    QNODE *lock = NULL;
+    QNODE qnodes[numThreads];
+
+    void MCSAcquireLock(QNODE **lock, int threadId)
+    {
+        QNODE *predecessor, *myNode = &qnodes[threadId];
+        myNode->next = NULL;
+        predecessor = FetchAndStore(lock,myNode);
+        if (predecessor != NULL)
+        {
+            myNode->locked = true; predecessor->next = myNode;
+            while (myNode->locked);
+        }
+    }
+
+    void MCSReleaseLock(QNODE **lock, int threadId)
+    {
+        QNODE *myNode = &qnodes[threadId];
+        if (myNode->next == NULL)
+        {
+            if (CompareAndSwap(lock,myNode,NULL))
+                return;
+            while (myNode->next == NULL);
+        }
+        myNode->next->locked = false;
+    } 
+\end{ccode}
+
 % section Verrou MCS (end)
 
 \section{Verrou CLH} % (fold)
 \label{sec:Verrou CLH}
+
+Utilise l'instruction atomique \texttt{FetchAndStore}, utilise $2$ mots par thread et $3$ mots par verrou. Pour $V$ verrous et $T$ threads, nous avons donc $3V+2T$ mots. Un peu plus rapide que MCS à cause des lectures en moins.
+
+\begin{algorithm}[h] %{{{
+    \KwData{Un noeud par thread avec un pointeur sur le prochain noeud \texttt{next} et un booléen \texttt{locked}}
+    \KwData{Un noeud global \texttt{lock} qui pointe vers un autre noeud à \texttt{true}}
+    $T_1$ tente d'acquérir le verrou, il fait un \texttt{CAS} sur le noeud pointé par \texttt{lock}\;
+    $T_1$ entre en section critique si ce qu'il récupère vaut n'est pas lock\;
+    $T_2$ tente d'acquérir le verrou, il fait un \texttt{CAS} sur le noeud pointé par \texttt{lock}\;
+    $T_2$ boucle sur son lock car il n'est pas libre\;
+    $T_1$ libère le verrou en mettant son \texttt{next} à \texttt{true}\;
+    \caption{Verrou CLH}
+    \label{algo:verrou-clh}
+\end{algorithm} %}}}
 
 % section Verrou CLH (end)
 
