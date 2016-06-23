@@ -138,23 +138,23 @@ La précédence ne peut être définis si $A$ et $B$ sont dans des threads diff�
 \label{sec:Algorithme de Peterson}
 
 \begin{ccode}
-volatile boolean_t flag[] = {FALSE,FALSE};
-volatile unsigned victim;
+    volatile boolean_t flag[] = {FALSE,FALSE};
+    volatile unsigned victim;
 
-cilk int Thread(unsigned i) // i = 0 ou 1
-{
-    unsigned j = 1 - i;
-    flag[i] = TRUE;
-    victim = i;
-    Cilk_fence();
+    cilk int Thread(unsigned i) // i = 0 ou 1
+    {
+        unsigned j = 1 - i;
+        flag[i] = TRUE;
+        victim = i;
+        Cilk_fence();
 
-    while (flag[j] && victim == i);
-    // section critique
-    flag[i] = FALSE;
+        while (flag[j] && victim == i);
+        // section critique
+        flag[i] = FALSE;
 
-    Cilk_fence();
-    return 0;
-}
+        Cilk_fence();
+        return 0;
+    }
 \end{ccode}
 % section Algorithme de Peterson (end)
 
@@ -644,5 +644,74 @@ Utilise l'instruction atomique \texttt{FetchAndStore}, utilise $2$ mots par thre
 % section Verrou CLH (end)
 
 % chapter Exclusion mutuelle (end)
+
+\chapter{Objets concurrents} % (fold)
+\label{cha:Objets concurrents}
+
+En programmation concurrente, lorsque l'on fait appel à un objet et qu'on utilise des méthodes sur celui-ci, les instructions dans la même méthodes peuvent se chevaucher mais aussi pour l'ensemble des méthodes de l'objet. Pour prouver un objet, il faut donc prendre en compte toutes les interactions possibles, aussi quand on rajoute des méthodes.
+
+Sur un file FIFO avec verrou, chaque modification de l'objet se fait par exclusion mutuelle :
+\begin{itemize}
+    \item pas d'action qui se chevauche
+    \item même comportement qu'en séquentiel
+\end{itemize}
+
+L'idée est que pour un comportement concurrent, un équivalent séquentiel. Chaque action réalisée sur un objet doit :
+\begin{itemize}
+    \item prendre effet
+    \item paraître instantanée entre son invocation et son retour
+\end{itemize}
+
+un tel objet est dit \textit{atomique}. Définitions :
+\begin{itemize}
+    \item L'invocation d'une méthode est définie par $2$ événements : son invocation et sa réponse.
+    \item La durée d'une méthode est un intervalle débutant par son invocation et terminant par sa réponse.
+    \item Une invocation et une réponse sont dites couplées si la réponse correspond à l'invocation.
+    \item L'invocation d'une méthode est dite pendante si sa réponse n'a pas encore eu lieu.
+    \item Un historique est une suite d'invocation et de réponse.
+    \item Un historique est complet si toutes ses invocations sont couplées à leur réponse, sinon il est partiel.
+\end{itemize}
+
+\section*{Notation :}
+
+Inocation : \verb|<thread><objet>.<méthode>(<arguments>)|
+
+Réponse : \verb|<thread><objet>:<résultat>|
+
+Un historique est dit séqentiel quand son premier événement est une invocation que toutes les invocations et réponses sont couplées. Un historique qui n'est pas séquentiel est dit concurrent. Pas tous les historiques ont un sens, seuls les historiques filtrés par threads donnant des sous historiques séquentiels sont permis.
+
+Deux historiques sont dit \textit{équivalent} si pour tous les threads $A$ de $H$, $H|A=G|A$.
+
+Un historique $H$ est légal si pour tous les objets $x$ dans $H$,$H|x$ satisfait à la spécification séquentille de $x$. Un historique séquentiel est simple à vérifier car l'historique définit un ordre total.
+
+Comme les threads ne réalisent pas que des historiques séquentiels, il faut transformer un historique concurrent en un historique séquentiel équivalent.
+
+\section{Précédence} % (fold)
+\label{sec:Précédence}
+
+Une opération sur un objet précède une autre si la réponse de la première précède l'invocation de la seconde, une opération sur un objet chevauche une autre si la réponse de la première ne précède pas l'invocation de la seconde.
+
+% section Précédence (end)
+
+\section{Atomicité} % (fold)
+\label{sec:Atomicité}
+
+Un historique $H$ est atomique si $H$ peut être étendu à un historique $G$ tel que $G$ est équivalent à un historique séquentiel $S$. Remarques :
+\begin{itemize}
+    \item La transformation de $H$ à $G$ permet de tenir compte de tous les appels pendants.
+    \item L'historique $S$ est une atomisation de $H$.
+    \item L'historique $H$ peut avoir plusieurs atomisations $S$.
+\end{itemize}
+
+Méthodes :
+\begin{itemize}
+    \item Identifier les points d'atomicités (mettre les traits bleu au endroit logique);
+    \item Traiter les opérations pendantes (si point d'atomicité atteint, on écrit le retour de la méthode à la fin de l'historique, sinon on la supprime);
+    \item Trouver un historique séquentiel équivalent.
+\end{itemize}
+
+% section Atomicité (end)
+
+% chapter Objets concurrents (end)
 
 \end{document}
